@@ -3,6 +3,7 @@ import geopandas as gpd
 from shapely.geometry import Polygon
 from timeit import default_timer as timer
 from osmApi import get_ways_in_relation
+import numpy as np
 
 ox.config(log_console=True, use_cache=True)
 
@@ -121,7 +122,7 @@ def tram_routes_to_highways():
 def avg_dist_between_crossroads():
     place = 'Krakow, Poland'
     cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
-    g = ox.graph_from_point((50.102526, 19.927396), network_type='drive', custom_filter=cf, dist=1000)
+    g = ox.graph_from_place(place, network_type='drive', custom_filter=cf, simplify=False)
     g_proj = ox.project_graph(g)
     consolidated = ox.consolidate_intersections(g_proj, rebuild_graph=True, tolerance=15, dead_ends=True)
 
@@ -129,9 +130,32 @@ def avg_dist_between_crossroads():
     to_keep = [n for (n, deg) in outdeg if deg > 1]
 
     consolidated_subgraph = consolidated.subgraph(to_keep)
-    # ox.plot_graph(consolidated_subgraph)
-    print('')
+    undir = ox.get_undirected(consolidated_subgraph)
+
+    return np.mean([length_tuple[2] for length_tuple in undir.edges.data('length')])
+
+def rtree_intersections(gdf, polygon):
+    possible_matches_idx = list(gdf.sindex.intersection(polygon.bounds))
+    possible_matches = gdf.iloc[possible_matches_idx]
+    return possible_matches[possible_matches.intersects(polygon)]
 
 
+def streets_in_radius():
+    place = 'Krakow, Poland'
+    cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
+    g = ox.get_undirected(ox.graph_from_place(place, network_type='drive', custom_filter=cf, simplify=True))
+    gdf = ox.project_gdf(ox.graph_to_gdfs(g, nodes=False))
+    gdf['no_of_neighbours'] = gdf.apply(lambda row: len(rtree_intersections(gdf, row.geometry.buffer(100))), axis=1)
+    return gdf['no_of_neighbours'].mean()
 
-print(timeit(avg_dist_between_crossroads))
+
+def share_of_separated_streets():
+    place = 'Krakow, Poland'
+    cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
+    g = ox.get_undirected(ox.graph_from_place(place, network_type='drive', custom_filter=cf, simplify=True))
+    gdf = ox.project_gdf(ox.graph_to_gdfs(g, nodes=False))
+    gdf['no_of_neighbours'] = gdf.apply(lambda row: len(rtree_intersections(gdf, row.geometry.buffer(50))), axis=1)
+    return gdf[gdf['no_of_neighbours'] < 4] / gdf.shape[0]
+
+# wyciac sama ulice dla ktorej szukam z wynikow
+print(timeit(share_of_separated_streets))
