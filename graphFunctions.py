@@ -5,6 +5,7 @@ from shapely.geometry import Polygon
 from timeit import default_timer as timer
 
 from functions import timeit
+from graphUtils import sum_edge_attribute, k_shortest_paths
 from osmApi import get_ways_in_relation
 import numpy as np
 import itertools as itertools
@@ -60,68 +61,6 @@ def longest_cycleway_network():
     return sum([edge[2] for edge in largest_subgraph.edges(data='length')])
 
 
-def average_how_many_subway_routes_are_there_from_one_stop_to_another():
-    G = ox.graph_from_place('Warszawa, Poland',
-                            retain_all=True, truncate_by_edge=True, simplify=False,
-                            custom_filter='["railway"~"subway"][!service]')
-    ox.utils_graph.add_edge_lengths(G)
-    subway_stations = ox.pois_from_place('Warszawa, Poland', {'railway': 'stop'})
-    stops = [n for n in G.nodes if n in list(subway_stations.osmid)]
-
-    lists = subway_stations[subway_stations.osmid.isin(G.nodes)].groupby('name')['osmid'].apply(list)
-
-    actual_stations = []
-    for osmids in lists:
-        actual_stations.append(osmids[0])
-        for osmid in osmids[1:len(osmids)]:
-            nx.contracted_nodes(G, osmids[0], osmid, self_loops=False, copy=False)
-
-    Gs = G.copy()
-
-    for station_id in actual_stations:
-        count = 0
-        while not set(Gs.neighbors(station_id)).issubset(actual_stations):
-            count = count + 1
-            neighbors_view = [neighbor for neighbor in Gs.neighbors(station_id)]
-            for neighbor in neighbors_view:
-                if neighbor not in actual_stations:
-                    nx.contracted_nodes(Gs, station_id, neighbor, self_loops=False, copy=False)
-            print('contracting for station ' + str(station_id) + ' iter: ' + str(count))
-
-    Gs = nx.Graph(nx.to_undirected(Gs))
-
-    for node in Gs.nodes:
-        for edge in Gs.edges(node):
-            Gs[edge[0]][edge[1]]['length'] = _path_len(G, nx.shortest_path(G, *edge, 'length'))
-
-    stations_pairs = list(itertools.combinations(actual_stations, 2))
-
-    number_of_routes = [_number_of_routes_not_longer_than_2_times(Gs, station_pair) for station_pair in stations_pairs]
-
-    print(number_of_routes)
-
-
-
-def _number_of_routes_not_longer_than_2_times(G, nodes_pair):
-    path = nx.shortest_path(G, *nodes_pair, weight='length')
-    shortest_path_len = _path_len(G, path)
-    shortest_paths = _find_paths_not_longer_than(G, nodes_pair, 3, 1.2 * shortest_path_len)
-    return len(shortest_paths)
-
-
-def _find_paths_not_longer_than(G, nodes_pair, init_number_of_paths_to_check, length_limit):
-    other_paths = [other_path for other_path in ox.k_shortest_paths(G, *nodes_pair, init_number_of_paths_to_check) if
-                   _path_len(G, other_path) < length_limit]
-    if len(other_paths) == init_number_of_paths_to_check:
-        return _find_paths_not_longer_than(G, nodes_pair, init_number_of_paths_to_check + 2, length_limit)
-    else:
-        return other_paths
-
-
-def _path_len(G, path):
-    return sum(ox.utils_graph.get_route_edge_attributes(G, path, 'length'))
-
-
 def longest_cycleway():
     other_cycleways = ['["highway"~"cycleway"]', '["cycleway"~"lane|opposite_lane|opposite|shared_lane"]']
     custom_filters = ['["bicycle"~"designated"]']
@@ -139,4 +78,3 @@ def longest_cycleway():
     print(max(maxes))
 
 
-print(average_how_many_subway_routes_are_there_from_one_stop_to_another())
