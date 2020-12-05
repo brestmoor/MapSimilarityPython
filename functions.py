@@ -5,14 +5,22 @@ from timeit import default_timer as timer
 from osmApi import get_ways_in_relation
 import numpy as np
 
-ox.config(log_console=True, use_cache=True)
+ox.config(log_console=False, use_cache=True)
 
 
 def timeit(func):
     start = timer()
     ret = func()
     end = timer()
-    print("took: " + str(end - start))
+    print(func.__name__ + "took: " + str(end - start))
+    return ret
+
+
+def timeit(func, args):
+    start = timer()
+    ret = func(args)
+    end = timer()
+    print(func.__name__ + "took: " + str(end - start))
     return ret
 
 
@@ -26,9 +34,9 @@ def _rtree_intersections(gdf, polygon):
     possible_matches = gdf.iloc[possible_matches_idx]
     return possible_matches[possible_matches.intersects(polygon)]
 
-def basic_stats():
+def basic_stats(place):
     cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
-    G = ox.graph_from_place('Krakow, Poland', network_type='drive', custom_filter=cf)
+    G = ox.graph_from_place(place, network_type='drive', custom_filter=cf)
 
     G_proj = ox.project_graph(G)
     nodes_proj = ox.graph_to_gdfs(G_proj, edges=False)
@@ -40,8 +48,8 @@ def basic_stats():
 #   street_density_km
 #   circuity_avg
 
-def one_way_percentage():
-    place = 'Krakow, Poland'
+def one_way_percentage(place):
+    place = place
     cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
     g = ox.graph_from_place(place, network_type='drive', custom_filter=cf, simplify=False)
     gu = ox.get_undirected(g)
@@ -49,8 +57,8 @@ def one_way_percentage():
     return mapDf.loc[mapDf['oneway'] == True].osmid.count() / mapDf.osmid.count()
 
 
-def primary_percentage():
-    place = 'Krakow, Poland'
+def primary_percentage(place):
+    place = place
     cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
     g = ox.graph_from_place(place, network_type='drive', custom_filter=cf, simplify=False)
     gu = ox.get_undirected(g)
@@ -58,10 +66,10 @@ def primary_percentage():
     return mapDf.loc[mapDf['highway'] == 'primary'].osmid.count() / mapDf.osmid.count()
 
 
-def average_dist_to_park():
-    parksDf = ox.pois_from_place('Krakow, Poland', {'leisure': 'park'})
+def average_dist_to_park(place):
+    parksDf = ox.pois_from_place(place, {'leisure': 'park'})
 
-    buildingsDf = ox.pois_from_place('Krakow, Poland', {'building': ['apartments', 'bungalow', 'cabin', 'detached', 'dormitory', 'farm', 'house', 'residential', 'terrace']})
+    buildingsDf = ox.pois_from_place(place, {'building': ['apartments', 'bungalow', 'cabin', 'detached', 'dormitory', 'farm', 'house', 'residential', 'terrace']})
 
     parks_polygons = parksDf[[isinstance(x, Polygon) for x in parksDf.geometry]]
     buildings_polygons = buildingsDf[[isinstance(x, Polygon) for x in buildingsDf.geometry]]
@@ -69,63 +77,63 @@ def average_dist_to_park():
     buildings_proj = ox.project_gdf(buildings_polygons)
     parks_proj = ox.project_gdf(parks_polygons)
 
-    buildings_proj['distance'] = buildings_proj[::5, :].apply(lambda row: _min_dist_df(row.geometry.centroid, parks_proj), axis=1)
+    buildings_proj['distance'] = buildings_proj.iloc[::5].apply(lambda row: _min_dist_df(row.geometry.centroid, parks_proj), axis=1)
     return buildings_proj['distance'].mean()
 
 
 
-def average_dist_to_bus_stop():
-    bus_df = ox.pois_from_place('Krakow, Poland', {'highway': 'bus_stop'})
+def average_dist_to_bus_stop(place):
+    bus_df = ox.pois_from_place(place, {'highway': 'bus_stop'})
 
-    buildingsDf = ox.pois_from_place('Krakow, Poland', {'building': ['apartments', 'bungalow', 'cabin', 'detached', 'dormitory', 'farm', 'house', 'residential', 'terrace']})
+    buildingsDf = ox.pois_from_place(place, {'building': ['apartments', 'bungalow', 'cabin', 'detached', 'dormitory', 'farm', 'house', 'residential', 'terrace']})
 
     buildings_polygons = buildingsDf[[isinstance(x, Polygon) for x in buildingsDf.geometry]]
 
     buildings_proj = ox.project_gdf(buildings_polygons)
     bus_proj = ox.project_gdf(bus_df)
 
-    buildings_proj['distance'] = buildings_proj.iloc[::10, :].apply(lambda row: _min_dist_df(row.geometry.centroid, bus_proj), axis=1)
+    buildings_proj['distance'] = buildings_proj.iloc[::10].apply(lambda row: _min_dist_df(row.geometry.centroid, bus_proj), axis=1)
 
-    print(buildings_proj['distance'].mean())
+    return buildings_proj['distance'].mean()
 
 
-def buildings_coverage():
-    buildingsDf = ox.pois_from_place('Krakow, Poland', {'building': ['apartments', 'bungalow', 'cabin', 'detached', 'dormitory', 'farm', 'house', 'residential', 'terrace', 'commercial',
+def buildings_coverage(place):
+    buildingsDf = ox.pois_from_place(place, {'building': ['apartments', 'bungalow', 'cabin', 'detached', 'dormitory', 'farm', 'house', 'residential', 'terrace', 'commercial',
                                                                      'industrial', 'office', 'retail', 'supermarket', 'warehouse', 'civic', 'hospital', 'public', 'school', 'train_station', 'university', 'semidetached_house']})
 
     buildingsPolygons = buildingsDf[[isinstance(x, Polygon) for x in buildingsDf.geometry]]
     buildings_proj = ox.project_gdf(buildingsPolygons)
 
-    krakow_boundary = ox.project_gdf(ox.geocode_to_gdf('Krakow, Poland'))
+    krakow_boundary = ox.project_gdf(ox.geocode_to_gdf(place))
 
     buildings_filtered = buildings_proj[buildings_proj['building'].isin(['apartments', 'bungalow', 'cabin', 'detached', 'dormitory', 'farm', 'house', 'residential', 'terrace', 'commercial',
                                                                          'industrial', 'office', 'retail', 'supermarket', 'warehouse', 'civic', 'hospital', 'public', 'school', 'train_station', 'university', 'semidetached_house'])]
 
     return buildings_filtered.area.sum() / krakow_boundary.area[0]
 
-def natural_terrain_coverage():
-    parksDf = ox.pois_from_place('Krakow, Poland', {'leisure': ['park', 'garden'], 'natural': ['wood', 'scrub', 'heath', 'grassland'], 'landuse': ['grass', 'forest']})
+def natural_terrain_coverage(place):
+    parksDf = ox.pois_from_place(place, {'leisure': ['park', 'garden'], 'natural': ['wood', 'scrub', 'heath', 'grassland'], 'landuse': ['grass', 'forest']})
 
     parks_polygons = parksDf[[isinstance(x, Polygon) for x in parksDf.geometry]]
     parks_proj = ox.project_gdf(parks_polygons)
 
-    krakow_boundary = ox.project_gdf(ox.geocode_to_gdf('Krakow, Poland'))
+    krakow_boundary = ox.project_gdf(ox.geocode_to_gdf(place))
 
     parks_filtered = parks_proj[parks_proj['leisure'].isin(['park', 'garden']) | parks_proj['natural'].isin(['wood', 'scrub', 'heath', 'grassland']) |  parks_proj['landuse'].isin(['grass', 'forest'])]
 
     return parks_filtered.area.sum() / krakow_boundary.area[0]
 
 
-def numer_of_parks_total():
-    parksDf = ox.pois_from_place('Krakow, Poland', {'leisure': 'park'})
-    parks_filtered = parksDf[parksDf['leisure'] == 'park']
+# def numer_of_parks_total(place):
+#     parksDf = ox.pois_from_place(place, {'leisure': 'park'})
+#     parks_filtered = parksDf[parksDf['leisure'] == 'park']
+#
+#     return len([isinstance(x, Polygon) for x in parks_filtered.geometry])
 
-    return len([isinstance(x, Polygon) for x in parks_filtered.geometry])
 
-
-def cycleways_to_highways():
-    poi_cycleways = ox.pois_from_place('Krakow, Poland', {'highway': 'cycleway', 'cycleway': ['lane', 'opposite_lane', 'opposite', 'shared_lane'], 'bicycle': 'designated'})
-    poi_highways = ox.pois_from_place('Krakow, Poland', {'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
+def cycleways_to_highways(place):
+    poi_cycleways = ox.pois_from_place(place, {'highway': 'cycleway', 'cycleway': ['lane', 'opposite_lane', 'opposite', 'shared_lane'], 'bicycle': 'designated'})
+    poi_highways = ox.pois_from_place(place, {'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
 
     cycleways_proj = ox.project_gdf(poi_cycleways)
     highways_proj = ox.project_gdf(poi_highways)
@@ -133,19 +141,19 @@ def cycleways_to_highways():
     return cycleways_proj.length.sum() / highways_proj.length.sum() # ilosc krawedzi i suma jest 2 razy mniejsza niz w przypadku PostGIS
 
 
-def bus_routes_to_highways():
+def bus_routes_to_highways(place):
     bus_routes_ways = get_ways_in_relation("Krakow, Poland", '"route"="bus"')
     ids_of_bus_ways = [x['ref'] for x in bus_routes_ways]
-    poi_highways = ox.pois_from_place('Krakow, Poland', {'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
+    poi_highways = ox.pois_from_place(place, {'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
 
     highways_proj = ox.project_gdf(poi_highways)
 
     return highways_proj[highways_proj.osmid.isin(ids_of_bus_ways)].length.sum() / highways_proj.length.sum() #pokrycje sie zwiekszylo z 28 do 38 %
 
 
-def tram_routes_to_highways():
-    poi_tram_routes = ox.pois_from_place('Krakow, Poland', {'railway': 'tram'})
-    poi_highways = ox.pois_from_place('Krakow, Poland', {'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
+def tram_routes_to_highways(place):
+    poi_tram_routes = ox.pois_from_place(place, {'railway': 'tram'})
+    poi_highways = ox.pois_from_place(place, {'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
 
     tram_routes_proj = ox.project_gdf(poi_tram_routes)
     highways_proj = ox.project_gdf(poi_highways)
@@ -153,8 +161,8 @@ def tram_routes_to_highways():
     return tram_routes_proj.length.sum() / highways_proj.length.sum() # ilosc krawedzi i suma jest 2 razy mniejsza niz w przypadku PostGIS
 
 
-def avg_dist_between_crossroads():
-    place = 'Krakow, Poland'
+def avg_dist_between_crossroads(place):
+    place = place
     cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
     g = ox.graph_from_place(place, network_type='drive', custom_filter=cf, simplify=False)
     g_proj = ox.project_graph(g)
@@ -169,8 +177,8 @@ def avg_dist_between_crossroads():
     return np.mean([length_tuple[2] for length_tuple in undir.edges.data('length')])
 
 
-def streets_in_radius():
-    place = 'Krakow, Poland'
+def streets_in_radius_of_100_m(place):
+    place = place
     cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
     g = ox.get_undirected(ox.graph_from_place(place, network_type='drive', custom_filter=cf, simplify=True))
     gdf = ox.project_gdf(ox.graph_to_gdfs(g, nodes=False))
@@ -178,8 +186,8 @@ def streets_in_radius():
     return gdf['no_of_neighbours'].mean()
 
 
-def share_of_separated_streets():
-    place = 'Krakow, Poland'
+def share_of_separated_streets(place):
+    place = place
     cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
     g = ox.get_undirected(ox.graph_from_place(place, network_type='drive', custom_filter=cf, simplify=True))
     gdf = ox.project_gdf(ox.graph_to_gdfs(g, nodes=False))
@@ -187,4 +195,20 @@ def share_of_separated_streets():
     return gdf[gdf['no_of_neighbours'] < 4].shape[0] / gdf.shape[0]
 
 
-print(timeit(cycleways_to_highways))
+all_functions = [
+    one_way_percentage,
+    primary_percentage,
+    average_dist_to_park,
+    average_dist_to_bus_stop,
+    buildings_coverage,
+    natural_terrain_coverage,
+    cycleways_to_highways,
+    bus_routes_to_highways,
+    tram_routes_to_highways,
+    avg_dist_between_crossroads,
+    streets_in_radius_of_100_m,
+    share_of_separated_streets
+]
+
+# print([timeit(function, "Krakow, Poland") for function in all_functions])
+print(average_dist_to_bus_stop("Krakow, Poland"))
