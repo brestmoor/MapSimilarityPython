@@ -3,17 +3,21 @@ import itertools
 import networkx as nx
 import numpy as np
 import osmnx as ox
+from osmnx._errors import EmptyOverpassResponse
 
-from functions import timeit
 from graphUtils import _find_paths_not_longer_than, _path_len, _path_len_digraph
 
 
 def how_many_failures_can_network_handle(place):
-    G = ox.graph_from_place(place,
-                            retain_all=True, truncate_by_edge=True, buffer_dist=500, simplify=False,
-                            custom_filter='["railway"~"subway"][!service]')
+    try:
+        G = ox.graph_from_place(place,
+                                retain_all=True, truncate_by_edge=True, buffer_dist=500, simplify=False,
+                                custom_filter='["railway"~"subway"][!service]')
+    except EmptyOverpassResponse:
+        return 0
+
     ox.utils_graph.add_edge_lengths(G)
-    subway_stops = ox.pois_from_place(place, {'railway': 'stop', 'subway': 'yes'})
+    subway_stops = ox.geometries_from_place(place, {'railway': 'stop', 'subway': 'yes'})
 
     lists_of_ids_per_station = subway_stops[subway_stops.osmid.isin(G.nodes)].groupby('name')['osmid'].apply(list)
     actual_stations = _join_stops_with_same_name(G, lists_of_ids_per_station)
@@ -42,11 +46,14 @@ def how_many_failures_can_network_handle(place):
 
 
 def average_how_many_subway_routes_are_there_from_one_stop_to_another(place):
-    G = ox.graph_from_place(place,
+    try:
+        G = ox.graph_from_place(place,
                             retain_all=True, truncate_by_edge=True, buffer_dist=500, simplify=False,
                             custom_filter='["railway"~"subway"][!service]')
+    except EmptyOverpassResponse:
+        return 0
     ox.utils_graph.add_edge_lengths(G)
-    subway_stops = ox.pois_from_place(place, {'railway': 'stop', 'subway': 'yes'})
+    subway_stops = ox.geometries_from_place(place, {'railway': 'stop', 'subway': 'yes'})
 
     lists_of_ids_per_station = subway_stops[subway_stops.osmid.isin(G.nodes)].groupby('name')['osmid'].apply(list)
     actual_stations = _join_stops_with_same_name(G, lists_of_ids_per_station)
@@ -108,4 +115,4 @@ def _number_of_routes_not_longer_than_2_times(G, nodes_pair):
     return shortest_paths_count
 
 
-print(timeit(how_many_failures_can_network_handle))
+# print(timeit(how_many_failures_can_network_handle))

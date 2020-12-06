@@ -5,12 +5,12 @@ import networkx as nx
 import numpy as np
 import osmnx as ox
 from osmnx import utils_graph
-from noOfSubwayRoutes import how_many_failures_can_network_handle
-from noOfSubwayRoutes import average_how_many_subway_routes_are_there_from_one_stop_to_another
 
 import osmApi as api
+from noOfSubwayRoutes import average_how_many_subway_routes_are_there_from_one_stop_to_another
+from noOfSubwayRoutes import how_many_failures_can_network_handle
 
-ox.config(log_console=True, use_cache=True)
+ox.config(log_console=False, use_cache=True)
 
 
 def _to_coordindates(shape):
@@ -20,7 +20,7 @@ def _to_coordindates(shape):
 def avg_short_distances_between_hospitals(place):
     network_graph = ox.graph_from_place(place, network_type='drive')
 
-    hospitals = ox.pois_from_place(place, {'amenity': 'hospital'})
+    hospitals = ox.geometries_from_place(place, {'amenity': 'hospital'})
     hospitals_centroids = hospitals.geometry.centroid
     centroids_as_tuples = [_to_coordindates(centroid) for centroid in hospitals_centroids]
     hospital_nodes = [ox.get_nearest_node(network_graph, coords_tuple) for coords_tuple in centroids_as_tuples]
@@ -33,7 +33,7 @@ def avg_short_distances_between_hospitals(place):
 def avg_short_distances_between_train_stations_and_city_center(place):
     network_graph = ox.graph_from_place(place, network_type='drive')
 
-    train_stations_centroids = ox.pois_from_place(place, {'railway': 'station'}).geometry.centroid
+    train_stations_centroids = ox.geometries_from_place(place, {'railway': 'station'}).geometry.centroid
     centroids_as_tuples = [_to_coordindates(centroid) for centroid in train_stations_centroids]
     train_station_nodes = [ox.get_nearest_node(network_graph, coords_tuple) for coords_tuple in centroids_as_tuples]
 
@@ -81,3 +81,6 @@ all_functions = [
     how_many_failures_can_network_handle,
     average_how_many_subway_routes_are_there_from_one_stop_to_another
 ]
+
+
+# print([timeit(function, "Krakow, Poland") for function in all_functions])

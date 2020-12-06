@@ -30,5 +30,5 @@ def similarity(scores_df):
     return similarity_df
 
 
-frame = pd.DataFrame({'a': [1, 8, 3, 10], 'b': [10, 3, 8, 1]})
-print(similarity(frame))
+# frame = pd.DataFrame({'a': [1, 100, 8, 100], 'b': [10, 50, 8, 10]})
+# print(similarity(frame))
