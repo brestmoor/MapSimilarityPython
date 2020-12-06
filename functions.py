@@ -286,4 +286,4 @@ all_functions = [
 ]
 
 # print([function("Krakow, Poland") for function in all_functions[:5]])
-# print(basic_stats("Krakow, Poland"))
+print(average_dist_to_bus_stop("Krakow, Poland"))

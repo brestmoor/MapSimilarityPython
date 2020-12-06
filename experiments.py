@@ -33,9 +33,9 @@ buses_and_cycleways = [
 
 
 def run(places, functions):
-    scores = [{place: [function(place) for function in functions]} for place in places]
+    scores = {place: [function(place) for function in functions] for place in places}
     scores_df = pd.DataFrame(scores)
     return similarity(scores_df)
 
 
-# run(["Krakow, Poland"], roads[0:5])
+# run(["Krakow, Poland", "Wroclaw, Poland"], buses_and_cycleways)
