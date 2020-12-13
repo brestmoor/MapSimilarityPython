@@ -5,10 +5,10 @@ def normalize_series(first, second):
     second_normalized = []
 
     for x, y in zip(first, second):
-        if x > 1 or y > 1:
+        if True:
             max_value = max(x, y)
-            first_normalized.append(normalize(x, max_value))
-            second_normalized.append(normalize(y, max_value))
+            first_normalized.append(max_value if max_value == 0 else normalize(x, max_value))
+            second_normalized.append(max_value if max_value == 0 else normalize(y, max_value))
         else:
             first_normalized.append(x)
             second_normalized.append(y)

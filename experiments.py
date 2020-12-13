@@ -36,13 +36,25 @@ def run_by_str(places, functions_str):
     criteria = []
     for criterion in functions_str:
         criteria.extend(all_criteria[criterion])
-    return run(places, criteria)
+    return run_similarity(places, criteria)
 
 
-def run(places, functions):
+def run_by_str_with_stats(places, functions_str):
+    criteria = []
+    for criterion in functions_str:
+        criteria.extend(all_criteria[criterion])
+    return run_similarity_with_stats(places, criteria)
+
+
+def run_similarity_with_stats(places, functions):
+    scores = {place: [function(place) for function in functions] for place in places}
+    scores_df = pd.DataFrame(scores)
+    return scores_df, similarity(scores_df)
+
+
+def run_similarity(places, functions):
     scores = {place: [function(place) for function in functions] for place in places}
     scores_df = pd.DataFrame(scores)
     return similarity(scores_df)
-
 
 # print(run(["Krakow, Poland", "Wroclaw, Poland", "Katowice, Poland"], buses_and_cycleways))

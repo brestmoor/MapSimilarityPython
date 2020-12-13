@@ -19,6 +19,12 @@ def cosine(x, y):
     return 1 - spatial.distance.cosine(x, y)
 
 
+def euclidean(x, y):
+    dimension = len(x)
+    max_distance = dimension**(1/2)
+    return 1 - spatial.distance.euclidean(x, y) / max_distance
+
+
 def angular_similarity(x, y):
     return 1 - np.arccos(cosine(x, y)) / np.pi
 
@@ -32,20 +38,9 @@ def similarity(scores_df):
 
     for first_idx, first_city in enumerate(cities):
         for second_idx, second_city in enumerate(cities):
-            similarity_matrix[first_idx][second_idx] = angular_similarity(
+            similarity_matrix[first_idx][second_idx] = euclidean(
                 *normalize_series(scores_df[first_city], scores_df[second_city]))
 
     similarity_df = pd.DataFrame(similarity_matrix, index=cities, columns=cities)
     return similarity_df
 
-
-# frame = pd.DataFrame({'a': [1, 100000, 8, 100], 'b': [10, 50000, 8, 10]})
-# print(similarity(krak_wroc))
-
-# print(pearson([6, 8, 11, 16, 4, 14, 15, 9, 19, 1, 3, 2, 20, 10, 5, 7, 12, 17, 18, 13], [
-#             47, 11, 32, 6, 13, 18, 1, 17, 37, 14, 20, 24, 19, 7, 30, 39, 28, 4, 35, 46]))
-#
-# print(similarity(pd.DataFrame({
-#     'first': [6, 8, 11, 16, 4, 14, 15, 9, 19, 1, 3, 2, 20, 10, 5, 7, 12, 17, 18, 13],
-#     'second': [47, 11, 32, 6, 13, 18, 1, 17, 37, 14, 20, 24, 19, 7, 30, 39, 28, 4, 35, 46]
-# })))
