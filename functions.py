@@ -4,64 +4,11 @@ import numpy as np
 import osmnx as ox
 from shapely.geometry import Polygon
 
+from function_util import memoize, timed
 from osmApi import get_ways_in_relation
+from spatial_util import _distance_to_nearest, _within
 
 ox.config(log_console=False, use_cache=True)
-
-
-def memoize(f):
-    memo = {}
-
-    def helper(x):
-        if x not in memo:
-            memo[x] = f(x)
-        return memo[x]
-
-    return helper
-
-
-def timed(func):
-    def timed_func(*args):
-        start = timer()
-        ret = func(*args)
-        end = timer()
-        print(func.__name__ + " took: " + str(end - start))
-        return ret
-
-    return timed_func
-
-
-def timeit(func):
-    start = timer()
-    ret = func()
-    end = timer()
-    print(func.__name__ + " took: " + str(end - start))
-    return ret
-
-
-def timeit(func, args):
-    start = timer()
-    ret = func(args)
-    end = timer()
-    print(func.__name__ + " took: " + str(end - start))
-    return ret
-
-
-def _min_dist_df(point, df):
-    distances = df.apply(lambda row: point.distance(row.geometry.centroid), axis=1)
-    return distances.min()
-
-
-def _within(gdf, polygon):
-    possible_matches_idx = list(gdf.sindex.intersection(polygon.bounds))
-    possible_matches = gdf.iloc[possible_matches_idx]
-    return possible_matches[possible_matches.intersects(polygon)]
-
-
-def _distance_to_nearest(gdf, polygon):
-    possible_matches_idx = list(gdf.sindex.nearest(polygon.bounds, 5))
-    possible_matches = gdf.iloc[possible_matches_idx]
-    return _min_dist_df(polygon.centroid, possible_matches)
 
 
 @memoize
@@ -80,6 +27,7 @@ def basic_stats(place):
 #   intersection_density_km
 #   street_density_km
 #   circuity_avg
+
 
 @timed
 def average_street_length(place):
@@ -119,6 +67,9 @@ def primary_percentage(place):
 def average_dist_to_park(place):
     parksDf = ox.geometries_from_place(place, {'leisure': 'park'})
 
+    if parksDf.empty:
+        return 10000
+
     buildingsDf = ox.geometries_from_place(place, {
         'building': ['apartments', 'bungalow', 'cabin', 'detached', 'dormitory', 'farm', 'house', 'residential',
                      'terrace']})
@@ -136,6 +87,8 @@ def average_dist_to_park(place):
 @timed
 def average_dist_to_bus_stop(place):
     bus_df = ox.geometries_from_place(place, {'highway': 'bus_stop'})
+    if bus_df.empty:
+        return 100000
 
     buildingsDf = ox.geometries_from_place(place, {
         'building': ['apartments', 'bungalow', 'cabin', 'detached', 'dormitory', 'farm', 'house', 'residential',
@@ -157,8 +110,8 @@ def buildings_coverage(place):
                      'industrial', 'office', 'retail', 'supermarket', 'warehouse', 'civic', 'hospital', 'public',
                      'school', 'train_station', 'university', 'semidetached_house']})
 
-    buildingsPolygons = buildingsDf[[isinstance(x, Polygon) for x in buildingsDf.geometry]]
-    buildings_proj = ox.project_gdf(buildingsPolygons)
+    buildings_polygons = buildingsDf[[isinstance(x, Polygon) for x in buildingsDf.geometry]]
+    buildings_proj = ox.project_gdf(buildings_polygons)
 
     krakow_boundary = ox.project_gdf(ox.geocode_to_gdf(place))
 
@@ -172,6 +125,10 @@ def natural_terrain_coverage(place):
                                                'landuse': ['grass', 'forest']})
 
     parks_polygons = parksDf[[isinstance(x, Polygon) for x in parksDf.geometry]]
+
+    if parks_polygons.empty:
+        return 0
+
     parks_proj = ox.project_gdf(parks_polygons)
 
     krakow_boundary = ox.project_gdf(ox.geocode_to_gdf(place))
@@ -195,6 +152,9 @@ def cycleways_to_highways(place):
                                                      'bicycle': 'designated'})
     poi_highways = ox.geometries_from_place(place, {
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
+
+    if poi_cycleways.empty:
+        return 0
 
     cycleways_proj = ox.project_gdf(poi_cycleways)
     highways_proj = ox.project_gdf(poi_highways)
@@ -220,6 +180,9 @@ def tram_routes_to_highways(place):
     poi_tram_routes = ox.geometries_from_place(place, {'railway': 'tram'})
     poi_highways = ox.geometries_from_place(place, {
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
+
+    if poi_tram_routes.empty:
+        return 0
 
     tram_routes_proj = ox.project_gdf(poi_tram_routes)
     highways_proj = ox.project_gdf(poi_highways)
@@ -286,4 +249,4 @@ all_functions = [
 ]
 
 # print([function("Krakow, Poland") for function in all_functions[:5]])
-print(average_dist_to_bus_stop("Krakow, Poland"))
+# print(average_dist_to_bus_stop("Krakow, Poland"))
