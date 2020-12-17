@@ -5,9 +5,11 @@ import numpy as np
 import osmnx as ox
 from osmnx._errors import EmptyOverpassResponse
 
+from function_util import timed
 from graphUtils import _find_paths_not_longer_than, _path_len, _path_len_digraph
 
 
+@timed
 def how_many_failures_can_network_handle(place):
     try:
         G = ox.graph_from_place(place,
@@ -45,11 +47,12 @@ def how_many_failures_can_network_handle(place):
     return not_failed
 
 
+@timed
 def average_how_many_subway_routes_are_there_from_one_stop_to_another(place):
     try:
         G = ox.graph_from_place(place,
-                            retain_all=True, truncate_by_edge=True, buffer_dist=500, simplify=False,
-                            custom_filter='["railway"~"subway"][!service]')
+                                retain_all=True, truncate_by_edge=True, buffer_dist=500, simplify=False,
+                                custom_filter='["railway"~"subway"][!service]')
     except EmptyOverpassResponse:
         return 0
     ox.utils_graph.add_edge_lengths(G)
@@ -75,6 +78,7 @@ def average_how_many_subway_routes_are_there_from_one_stop_to_another(place):
 
     return np.mean(number_of_routes)
 
+
 def _assign_shortest_path_as_length(Gs, G, actual_stations):
     for node in actual_stations:
         for u, v in Gs.edges(node):
@@ -98,6 +102,7 @@ def _contract_all_nodes_between_stations(Gs, actual_stations):
                         Gs.remove_node(neighbor)
     ox.plot_graph(Gs, figsize=(20, 20))
 
+
 def _join_stops_with_same_name(G, lists_of_ids_per_station):
     actual_stations = []
     for osmids in lists_of_ids_per_station:
@@ -113,6 +118,5 @@ def _number_of_routes_not_longer_than_2_times(G, nodes_pair):
     shortest_paths_count = len(_find_paths_not_longer_than(G, nodes_pair, 3, 1.2 * shortest_path_len))
     print('finished for: ' + str(nodes_pair))
     return shortest_paths_count
-
 
 # print(timeit(how_many_failures_can_network_handle))

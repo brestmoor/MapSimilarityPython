@@ -1,4 +1,4 @@
 {
-  "cities": ["Sosnowiec, Poland", "Koszalin, Poland", "Zielona Gora, Poland"],
-  "criteria": ["buses_and_cycleways"]
+  "cities": ["Krakow, Poland", "Katowice, Poland", "Wroclaw, Poland", "Kielce, Poland", "Poznan, Poland", "Lodz, Poland"],
+  "criteria": ["roads"]
 }

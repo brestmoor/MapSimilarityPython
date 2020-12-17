@@ -28,6 +28,16 @@ all_criteria = {
         df_functions.cycleways_to_highways,
         df_functions.tram_routes_to_highways
     ],
+    'subway': [
+        graph_functions.average_how_many_subway_routes_are_there_from_one_stop_to_another,
+        graph_functions.how_many_failures_can_network_handle,
+    ],
+    'facilities': [
+        graph_functions.avg_short_distances_between_hospitals,
+        graph_functions.avg_short_distances_between_train_stations_and_city_center,
+        graph_functions.longest_cycleway_network,
+    ],
+
     'all_functions': df_functions.all_functions + graph_functions.all_functions
 }
 
