@@ -1,0 +1,12 @@
+name: MapSimilarityPython
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - osmnx
+  - matplotlib
+  - scikit-surprise
+  - tabulate
+  - notebook
+  - jupyterlab
+prefix: C:\tools\miniconda3\envs\MapSimilarityPython

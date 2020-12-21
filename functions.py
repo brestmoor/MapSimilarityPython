@@ -4,9 +4,9 @@ import numpy as np
 import osmnx as ox
 from shapely.geometry import Polygon
 
-from function_util import memoize, timed
+from util.function_util import memoize, timed
 from osmApi import get_ways_in_relation
-from spatial_util import _distance_to_nearest, _within
+from util.spatial_util import distance_to_nearest, within
 
 ox.config(log_console=False, use_cache=True)
 
@@ -21,12 +21,6 @@ def basic_stats(place):
     graph_area_m = nodes_proj.unary_union.convex_hull.area
 
     return ox.basic_stats(G_proj, area=graph_area_m, clean_intersects=True, circuity_dist='euclidean')
-
-
-#   average street length
-#   intersection_density_km
-#   street_density_km
-#   circuity_avg
 
 
 @timed
@@ -80,7 +74,7 @@ def average_dist_to_park(place):
     buildings_proj = ox.project_gdf(buildings_polygons)
     parks_proj = ox.project_gdf(parks_polygons)
 
-    distances = buildings_proj.iloc[::5].apply(lambda row: _distance_to_nearest(parks_proj, row.geometry), axis=1)
+    distances = buildings_proj.iloc[::5].apply(lambda row: distance_to_nearest(parks_proj, row.geometry), axis=1)
     return distances.mean()
 
 
@@ -88,7 +82,7 @@ def average_dist_to_park(place):
 def average_dist_to_bus_stop(place):
     bus_df = ox.geometries_from_place(place, {'highway': 'bus_stop'})
     if bus_df.empty:
-        return 100000
+        return 1000000
 
     buildingsDf = ox.geometries_from_place(place, {
         'building': ['apartments', 'bungalow', 'cabin', 'detached', 'dormitory', 'farm', 'house', 'residential',
@@ -98,7 +92,7 @@ def average_dist_to_bus_stop(place):
 
     buildings_proj = ox.project_gdf(buildings_polygons)
     bus_proj = ox.project_gdf(bus_df)
-    distances = buildings_proj.iloc[::10].apply(lambda row: _distance_to_nearest(bus_proj, row.geometry), axis=1)
+    distances = buildings_proj.iloc[::10].apply(lambda row: distance_to_nearest(bus_proj, row.geometry), axis=1)
     return distances.mean()
 
 
@@ -216,7 +210,7 @@ def streets_in_radius_of_100_m(place):
     highways = ox.geometries_from_place(place, {
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
     gdf = ox.project_gdf(highways)
-    gdf['no_of_neighbours'] = gdf.apply(lambda row: len(_within(gdf, row.geometry.buffer(100))), axis=1)
+    gdf['no_of_neighbours'] = gdf.apply(lambda row: len(within(gdf, row.geometry.buffer(100))), axis=1)
     return gdf['no_of_neighbours'].mean()
 
 
@@ -225,7 +219,7 @@ def share_of_separated_streets(place):
     highways = ox.geometries_from_place(place, {
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
     gdf = ox.project_gdf(highways)
-    gdf['no_of_neighbours'] = gdf.apply(lambda row: len(_within(gdf, row.geometry.buffer(50))), axis=1)
+    gdf['no_of_neighbours'] = gdf.apply(lambda row: len(within(gdf, row.geometry.buffer(50))), axis=1)
     return gdf[gdf['no_of_neighbours'] < 4].shape[0] / gdf.shape[0]
 
 
@@ -247,6 +241,3 @@ all_functions = [
     streets_in_radius_of_100_m,
     share_of_separated_streets
 ]
-
-# print([function("Krakow, Poland") for function in all_functions[:5]])
-# print(average_dist_to_bus_stop("Krakow, Poland"))

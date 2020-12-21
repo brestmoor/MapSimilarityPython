@@ -67,4 +67,3 @@ def run_similarity(places, functions):
     scores_df = pd.DataFrame(scores)
     return similarity(scores_df)
 
-# print(run(["Krakow, Poland", "Wroclaw, Poland", "Katowice, Poland"], buses_and_cycleways))

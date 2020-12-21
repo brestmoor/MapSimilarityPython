@@ -1,17 +1,23 @@
 import json
-import sys
-from tabulate import tabulate
-from experiments import run_by_str, run_by_str_with_stats
 
+from experiments import run_by_str_with_stats
 # file_path = sys.argv[1]
+from util.function_util import timed
 
-file_path = 'compare_buses.json'
+file_path = './notebook/compare_subway.json'
 
-with open(file_path, 'r') as file:
-    experiment = json.load(file)
-    cities = experiment['cities']
-    criteria = experiment['criteria']
-    stats_df, similarity_df = run_by_str_with_stats(cities, criteria)
+
+@timed
+def run(path):
+    with open(path, 'r') as file:
+        experiment = json.load(file)
+        cities = experiment['cities']
+        criteria = experiment['criteria']
+        return run_by_str_with_stats(cities, criteria)
+
+
+if __name__ == '__main__':
+    stats_df, similarity_df = run(file_path)
     print(stats_df.to_string())
     print()
     print(similarity_df.to_string())

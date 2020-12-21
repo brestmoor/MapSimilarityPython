@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from scipy import spatial
 
-from processing import normalize_series
+from util.processing import normalize_series
 
 
 def positive_pearson(x, y):
