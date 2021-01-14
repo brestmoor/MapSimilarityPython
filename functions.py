@@ -2,6 +2,7 @@ from timeit import default_timer as timer
 
 import numpy as np
 import osmnx as ox
+import pandas as pd
 from shapely.geometry import Polygon
 
 from util.function_util import memoize, timed
@@ -9,6 +10,8 @@ from osmApi import get_ways_in_relation
 from util.spatial_util import distance_to_nearest, within
 
 ox.config(log_console=False, use_cache=True)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', 900)
 
 
 @memoize
@@ -47,14 +50,24 @@ def circuity_avg(place):
 def one_way_percentage(place):
     highways = ox.geometries_from_place(place, {
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
-    return highways.loc[highways['oneway'] == 'yes'].osmid.count() / highways.osmid.count()
+    try:
+        oneway_count = highways.loc[highways['oneway'] == 'yes'].osmid.count() / highways.osmid.count()
+        return oneway_count
+    except KeyError as k:
+        print(k)
+        print("Occured for " + str(place))
 
 
 @timed
 def primary_percentage(place):
     highways = ox.geometries_from_place(place, {
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
-    return highways.loc[highways['highway'] == 'primary'].osmid.count() / highways.osmid.count()
+    try:
+        primary_count = highways.loc[highways['highway'] == 'primary'].osmid.count() / highways.osmid.count()
+        return primary_count
+    except KeyError as k:
+        print(k)
+        print("Occured for " + str(place))
 
 
 @timed
@@ -97,7 +110,7 @@ def average_dist_to_bus_stop(place):
 
 
 @timed
-def buildings_coverage(place):
+def buildings_density(place):
     buildingsDf = ox.geometries_from_place(place, {
         'building': ['apartments', 'bungalow', 'cabin', 'detached', 'dormitory', 'farm', 'house', 'residential',
                      'terrace', 'commercial',
@@ -105,7 +118,14 @@ def buildings_coverage(place):
                      'school', 'train_station', 'university', 'semidetached_house']})
 
     buildings_polygons = buildingsDf[[isinstance(x, Polygon) for x in buildingsDf.geometry]]
-    buildings_proj = ox.project_gdf(buildings_polygons)
+    if 'element_type' in buildings_polygons.columns:
+        buildings_polygons = buildings_polygons[buildings_polygons.element_type == 'way']
+
+    try:
+        buildings_proj = ox.project_gdf(buildings_polygons)
+    except AttributeError as ae:
+        print(str(ae) + "for " + place)
+        return 0
 
     krakow_boundary = ox.project_gdf(ox.geocode_to_gdf(place))
 
@@ -113,12 +133,14 @@ def buildings_coverage(place):
 
 
 @timed
-def natural_terrain_coverage(place):
+def natural_terrain_density(place):
     parksDf = ox.geometries_from_place(place, {'leisure': ['park', 'garden'],
                                                'natural': ['wood', 'scrub', 'heath', 'grassland'],
                                                'landuse': ['grass', 'forest']})
 
     parks_polygons = parksDf[[isinstance(x, Polygon) for x in parksDf.geometry]]
+    if 'element_type' in parks_polygons.columns:
+        parks_polygons = parks_polygons[parks_polygons.element_type == 'way']
 
     if parks_polygons.empty:
         return 0
@@ -127,10 +149,20 @@ def natural_terrain_coverage(place):
 
     krakow_boundary = ox.project_gdf(ox.geocode_to_gdf(place))
 
+    if 'leisure' not in parks_proj:
+        parks_proj['leisure'] = ''
+
+    if 'natural' not in parks_proj:
+        parks_proj['natural'] = ''
+
+    if 'landuse' not in parks_proj:
+        parks_proj['landuse'] = ''
+
     parks_filtered = parks_proj[parks_proj['leisure'].isin(['park', 'garden']) | parks_proj['natural'].isin(
         ['wood', 'scrub', 'heath', 'grassland']) | parks_proj['landuse'].isin(['grass', 'forest'])]
 
     return parks_filtered.area.sum() / krakow_boundary.area[0]
+
 
 
 # def numer_of_parks_total(place):
@@ -158,7 +190,7 @@ def cycleways_to_highways(place):
 
 @timed
 def bus_routes_to_highways(place):
-    bus_routes_ways = get_ways_in_relation("Krakow, Poland", '"route"="bus"')
+    bus_routes_ways = get_ways_in_relation(place, '"route"="bus"')
     ids_of_bus_ways = [x['ref'] for x in bus_routes_ways]
     poi_highways = ox.geometries_from_place(place, {
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
@@ -223,6 +255,31 @@ def share_of_separated_streets(place):
     return gdf[gdf['no_of_neighbours'] < 4].shape[0] / gdf.shape[0]
 
 
+@timed
+def distance_between_buildings(place):
+    buildingsDf = ox.geometries_from_place(place, {
+        'building': ['apartments', 'bungalow', 'cabin', 'detached', 'dormitory', 'farm', 'house', 'residential',
+                     'terrace', 'commercial',
+                     'industrial', 'office', 'retail', 'supermarket', 'warehouse', 'civic', 'hospital', 'public',
+                     'school', 'train_station', 'university', 'semidetached_house']})
+
+    buildings_polygons = buildingsDf[[isinstance(x, Polygon) for x in buildingsDf.geometry]]
+
+    try:
+        buildings_polygons = ox.project_gdf(buildings_polygons)
+    except AttributeError as ae:
+        print(str(ae) + "for " + place)
+        return 0
+
+    try:
+        buildings_polygons['dist_to_nearest_building'] = buildings_polygons.apply(
+            lambda row: distance_to_nearest(buildings_polygons, row.geometry), axis=1)
+    except ValueError as e:
+        print(str(e) + " happened for " + place)
+        return 1000000
+    return buildings_polygons['dist_to_nearest_building'].mean()
+
+
 all_functions = [
     average_street_length,
     intersection_density_km,
@@ -232,8 +289,8 @@ all_functions = [
     primary_percentage,
     average_dist_to_park,
     average_dist_to_bus_stop,
-    buildings_coverage,
-    natural_terrain_coverage,
+    buildings_density,
+    natural_terrain_density,
     cycleways_to_highways,
     bus_routes_to_highways,
     tram_routes_to_highways,

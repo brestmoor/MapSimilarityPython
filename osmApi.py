@@ -7,7 +7,11 @@ def get_ways_in_relation(addr, selector):
     areaId = nominatim.query(addr).areaId()
     overpass = Overpass()
     query = overpassQueryBuilder(area=areaId, elementType='relation', selector=selector)
-    result = overpass.query(query)
+    try:
+        result = overpass.query(query)
+    except Exception as e:
+        print(Exception("Could not obtain Overpass data for " + addr + ", selector" + selector + ".\n" + str(e)))
+        return []
     relations = [filter_ways_from_relation(x) for x in result.toJSON()['elements']]
     return [way for relation in relations for way in relation]
 

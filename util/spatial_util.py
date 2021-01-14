@@ -5,8 +5,9 @@ def within(gdf, polygon):
 
 
 def distance_to_nearest(gdf, polygon):
-    possible_matches_idx = list(gdf.sindex.nearest(polygon.bounds, 5))
+    possible_matches_idx = list(gdf.sindex.nearest(polygon.bounds, 6))
     possible_matches = gdf.iloc[possible_matches_idx]
+    possible_matches = possible_matches[possible_matches.geometry != polygon]
     return _min_dist_df(polygon.centroid, possible_matches)
 
 
