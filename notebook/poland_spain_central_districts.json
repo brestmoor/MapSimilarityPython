@@ -1,0 +1,36 @@
+{
+  "cities": [
+    "Casco Antiguo, Seville, Spain",
+    "Centro, Zaragoza, Spain",
+    "Centro, Madrid, Spain",
+    "Ciutat Vella, Barcelona, Spain",
+    "Centro, Malaga, Spain",
+    "Murcia, Murcia, Spain",
+    "Abando, Bilbao, Spain",
+    "Distrito Centro, Gijon, Spain",
+    "A Coruna, A Coruna, Spain",
+    "Beiro, Granada, Spain",
+    "Centro y casco historico, Oviedo, Spain",
+    "Centro, Salamanca, Spain",
+
+    "Lodz-Srodmiescie, Lodz, Poland",
+    "Stare Miasto, Krakow, Poland",
+    "Osiedle Stare Miasto, Wroclaw, Poland",
+    "Stare Miasto, Poznan, Poland",
+    "Srodmiescie, Gdansk, Poland",
+    "Srodmiescie, Szczecin, Poland",
+    "Srodmiescie-Bocianowo-Stare Miasto, Bydgoszcz, Poland",
+    "Stare Miasto, Lublin, Poland",
+    "Srodmiescie, Katowice, Poland",
+    "Centrum, Bialystok, Poland",
+    "Srodmiescie, Gdynia, Poland",
+    "Srodmiescie, Czestochowa, Poland",
+    "Stare Miasto, Torun, Poland",
+    "Srodmiescie, Gliwice, Poland",
+    "Centrum Polnoc, Zabrze, Poland",
+    "Srodmiescie, Bytom, Poland"
+  ],
+  "criteria": [
+    "city_structure_extended"
+  ]
+}

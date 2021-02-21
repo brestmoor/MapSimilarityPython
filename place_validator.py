@@ -13,8 +13,8 @@ def validate_places(places):
 def validate(place):
     try:
         nominatim = Nominatim()
-        nominatim.query(place).areaId()
-        return True
+        area_id = nominatim.query(place).areaId()
+        return True if area_id is not None else False
     except Exception as e:
         print("Validator: " + str(e))
         return False

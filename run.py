@@ -24,5 +24,9 @@ def run(path):
 if __name__ == '__main__':
     process_experiment(file_path, get_scores).to_csv(output_file_path)
 
-
+    # results = process_experiment(file_path, get_scores)
+    # file_path_no_format = file_path.split('.')[0]
+    # os.mkdir('./results/' + str(file_path_no_format) + datetime.now().strftime("_%H_%M_%S"))
+    # results.to_csv(output_file_path if output_file_path is not None else file_path_no_format)
+    # pca(results)
 

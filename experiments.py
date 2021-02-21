@@ -20,13 +20,26 @@ all_criteria = {
         df_functions.share_of_separated_streets,
     ],
     'city_structure_extended': [
-        df_functions.circuity_avg,
-        df_functions.average_street_length,
-        df_functions.one_way_percentage,
-        df_functions.intersection_density_km,
-        df_functions.share_of_separated_streets,
-        df_functions.distance_between_buildings,
-        # df_functions.avg_dist_between_crossroads,
+        # df_functions.circuity_avg,
+        # df_functions.average_street_length,
+        # df_functions.one_way_percentage,
+        # df_functions.intersection_density_km,
+        # df_functions.share_of_separated_streets,
+        # df_functions.distance_between_buildings,
+        # df_functions.avg_dist_from_building_to_center,
+        # df_functions.buildings_uniformity,
+        # df_functions.share_of_buildings_near_center,
+        # df_functions.avg_building_area,
+        #
+        # df_functions.natural_terrain_density,
+        # df_functions.buildings_density,
+        # df_functions.median_dist_between_crossroads,
+        # df_functions.mode_dist_between_crossroads,
+        # df_functions.streets_per_node_avg,
+        # df_functions.circuity,
+        # df_functions.avg_distance_to_5_buildings,
+        # df_functions.buildings_density_in_2km_radius,
+        df_functions.network_orientation,
     ],
     'industrial_and_buses': [
         df_functions.buildings_density,
@@ -56,16 +69,24 @@ all_criteria = {
         df_functions.average_dist_to_bus_stop,
         df_functions.bus_routes_to_highways,
         df_functions.cycleways_to_highways,
-        df_functions.tram_routes_to_highways
+        df_functions.tram_routes_to_highways,
+        graph_functions.avg_short_distances_between_hospitals,
     ],
     'subway': [
         graph_functions.average_how_many_subway_routes_are_there_from_one_stop_to_another,
         graph_functions.how_many_failures_can_network_handle,
     ],
-    'facilities': [
+    'city_planning': [
         graph_functions.avg_short_distances_between_hospitals,
         graph_functions.avg_short_distances_between_train_stations_and_city_center,
         graph_functions.longest_cycleway_network,
+    ],
+    'facilities': [
+        df_functions.pubs_density,
+        df_functions.education_buildings_density,
+        df_functions.entertainment_buildings_density,
+        df_functions.shops_density,
+        df_functions.office_density,
     ],
 
     'all_functions': df_functions.all_functions + graph_functions.all_functions

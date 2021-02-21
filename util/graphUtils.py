@@ -37,5 +37,18 @@ def path_len(G, path):
     return sum_edge_attribute(G, path)
 
 
+def great_circle_dist(G, orig, dest):
+    return ox.distance.great_circle_vec(G.nodes[orig]['y'], G.nodes[orig]['x'],
+                                        G.nodes[dest]['y'], G.nodes[dest]['x'])
+
+
 def get_biggest_SCC(G):
     return max(nx.strongly_connected_components(G))
+
+
+def shortest_path(G, orig, dest):
+    try:
+        return ox.shortest_path(G, orig, dest)
+    except nx.NetworkXNoPath as e:
+        print(e)
+        return None

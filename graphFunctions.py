@@ -43,13 +43,12 @@ def avg_short_distances_between_train_stations_and_city_center(place):
     centroids_as_tuples = [_to_coordindates(centroid) for centroid in train_stations_centroids]
     train_station_nodes = [ox.get_nearest_node(network_graph, coords_tuple) for coords_tuple in centroids_as_tuples]
 
-    city_center_node = ox.get_nearest_node(network_graph, api.get_city_center(place))
+    city_center_node = ox.get_nearest_node(network_graph, api.get_city_center_coordinates(place)[::-1])
 
     pairs = [(city_center_node, train_station_node) for train_station_node in train_station_nodes]
     shortest_paths = [ox.shortest_path(network_graph, *pair) for pair in pairs]
     sums = [sum(ox.utils_graph.get_route_edge_attributes(network_graph, path, 'length')) for path in shortest_paths]
     return np.mean(sums)
-
 
 @timed
 def longest_cycleway_network(place):

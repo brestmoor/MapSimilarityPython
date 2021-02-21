@@ -27,3 +27,7 @@ def remove_outliers(df):
 def standarize(df):
     standarized_matrix = StandardScaler().fit_transform(df)
     return pd.DataFrame(standarized_matrix, index=df.index, columns=df.columns)
+
+
+def preprocess(df):
+    return standarize(remove_outliers(df))
