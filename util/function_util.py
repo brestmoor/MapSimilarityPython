@@ -17,7 +17,7 @@ def timed(func):
         start = timer()
         ret = func(*args)
         end = timer()
-        print(func.__name__ + " for " + str(*args) + " took: " + str(end - start))
+        print(func.__name__ + " for " + str(args) + " took: " + str(end - start))
         return ret
 
     timed_func.original_func_name = func.__name__

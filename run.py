@@ -1,8 +1,11 @@
 import json
 import sys
+import osmnx as ox
 
 from experiments import get_scores_and_similarity, get_scores
 from util.function_util import timed
+
+ox.config(log_console=False, use_cache=True, )
 
 file_path = sys.argv[1]
 output_file_path = sys.argv[2]

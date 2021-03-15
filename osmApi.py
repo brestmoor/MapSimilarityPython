@@ -1,19 +1,44 @@
 from OSMPythonTools.nominatim import Nominatim
 from OSMPythonTools.overpass import overpassQueryBuilder, Overpass
 
+from util.function_util import timed
+
 
 def get_ways_in_relation(addr, selector):
+    relations = overpass_query(addr, selector, 'relation')
+    relations = [filter_ways_from_relation(x) for x in relations]
+    return [way for relation in relations for way in relation]
+
+
+def get_count(addr, selector, element_type='way'):
     nominatim = Nominatim()
     areaId = nominatim.query(addr).areaId()
-    overpass = Overpass()
-    query = overpassQueryBuilder(area=areaId, elementType='relation', selector=selector)
+    overpass = Overpass(endpoint='https://overpass.kumi.systems/api/')
+    query = overpassQueryBuilder(area=areaId, selector=selector, out='count', elementType=element_type)
+    result = overpass.query(query)
+    return result.countElements()
+
+@timed
+def get_centroid(addr, selector, element_type='way'):
+    nominatim = Nominatim()
+    areaId = nominatim.query(addr).areaId()
+    overpass = Overpass(endpoint='https://overpass.kumi.systems/api/')
+    query = overpassQueryBuilder(area=areaId, selector=selector, out='center', elementType=element_type)
+    overpass.deleteQueryFromCache(query)
+    result = overpass.query(query, timeout=120)
+    return result.countElements()
+
+
+def overpass_query(addr, selector, element_type):
+    nominatim = Nominatim()
+    areaId = nominatim.query(addr).areaId()
+    overpass = Overpass(endpoint='https://overpass.kumi.systems/api/')
+    query = overpassQueryBuilder(area=areaId, elementType=element_type, selector=selector)
     try:
-        result = overpass.query(query)
+        return overpass.query(query).toJSON()['elements']
     except Exception as e:
         print(Exception("Could not obtain Overpass data for " + addr + ", selector" + selector + ".\n" + str(e)))
         return []
-    relations = [filter_ways_from_relation(x) for x in result.toJSON()['elements']]
-    return [way for relation in relations for way in relation]
 
 
 def filter_ways_from_relation(relation):
@@ -40,9 +65,13 @@ def get_city_center(place):
 def get_city_center_geometry(place):
     return get_city_center(place).geometry()
 
+
 def get_city_center_coordinates(place):
     center = get_city_center(place)
     geometry = center.geometry()
     return geometry.coordinates[0], geometry.coordinates[1]
 
+
 # print(get_city_center('Kielce, Poland'))
+# get_centroid("Bochum, Germany", '"building"')
+# print()

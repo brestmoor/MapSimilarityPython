@@ -1,0 +1,79 @@
+{
+  "cities": [
+    "Stare Miasto, Krakow, Poland",
+    "Stare Miasto, Wroclaw, Poland",
+    "Srodmiescie, Lodz, Poland",
+    "Stare Miasto, Poznan, Poland",
+    "Srodmiescie, Gdansk, Poland",
+    "Stare Miasto, Szczecin, Poland",
+    "Centrum, Szczecin, Poland",
+    "Centrum, Bialystok, Poland",
+
+
+    "Bronowice, Krakow, Poland",
+    "Pradnik Czerwony, Krakow, Poland",
+    "Czyzyny, Krakow, Poland",
+    "Mistrzejowice, Krakow, Poland",
+    "Nowa Huta, Krakow, Poland",
+    "Biezanow-Prokocim, Krakow, Poland",
+
+    "Osiedle szczepin, Wroclaw, Poland",
+    "Osiedle olbin, Wroclaw, Poland",
+    "Osiedle Powstancow Slaskich, Wroclaw, Poland",
+    "Osiedle borek, Wroclaw, Poland",
+    "Osiedle oltaszyn, Wroclaw, Poland",
+    "Karlowice, Wroclaw, Poland",
+
+    "Baluty, Lodz, Poland",
+    "Lodz-Widzew, Lodz, Poland",
+    "Karolew-Retkinia Wschod, Lodz, Poland",
+    "Lodz-Gorna, Lodz, Poland",
+    "Ruda, Lodz, Poland",
+    "Stoki-Sikawa-Podgorze, Lodz, Poland",
+
+    "Jezyce, Poznan, Poland",
+    "Winiary, Poznan, Poland",
+    "Winogrady, Poznan, Poland",
+    "Wilda, Poznan, Poland",
+    "Gorczyn, Poznan, Poland",
+    "Swierczewo, Poznan, Poland",
+    "Grunwald Polnoc, Poznan, Poland",
+
+    "Siedlce, Gdansk, Poland",
+    "Wzgorze Mickiewicza, Gdansk, Poland",
+    "Suchanino, Gdansk, Poland",
+    "Wrzeszcz Dolny, Gdansk, Poland",
+
+    "Zoliborz, Warszawa, Poland",
+    "Bielany, Warszawa, Poland",
+    "Wola, Warszawa, Poland",
+    "Bemowo, Warszawa, Poland",
+    "Ursus, Warszawa, Poland",
+    "Wlochy, Warszawa, Poland",
+    "Mokotow, Warszawa, Poland",
+    "Praga-Poludnie, Warszawa, Poland",
+    "Targowek, Warszawa, Poland",
+    "Zabki, Warszawa, Poland",
+    "Marki, Warszawa, Poland",
+    "Wawer, Warszawa, Poland",
+
+    "Nowe Miasto, Szczecin, Poland",
+    "Turzyn, Szczecin, Poland",
+    "Srodmiescie-Polnoc, Szczecin, Poland",
+    "Srodmiescie-Zachod, Szczecin, Poland",
+    "Niebuszewo-Bolinko, Szczecin, Poland",
+    "Niebuszewo, Szczecin, Poland",
+    "Swierczewo, Szczecin, Poland",
+    "Gumience, Szczecin, Poland",
+
+    "Mlodych, Bialystok, Poland",
+    "Kawaleryjskie, Bialystok, Poland",
+    "Piaski, Bialystok, Poland",
+    "Bojary, Bialystok, Poland",
+    "Antoniuk, Bialystok, Poland",
+    "Wysoki Stoczek, Bialystok, Poland"
+  ],
+  "criteria": [
+    "city_structure_extended"
+  ]
+}

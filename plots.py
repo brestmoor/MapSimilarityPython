@@ -21,7 +21,7 @@ north_italy = [    "Morbegno, Italy","Domodossola, Italy","Bormio, Italy","Lecco
 south_italy = ["Savoca, Sicily, Italy","Catania, Sicily, Italy","Cefalu, Sicily, Italy","Caltanissetta, Sicily, Italy","Barrafranca, Sicily, Italy","Mussomeli, Sicily, Italy","Prizzi, Sicily, Italy","Alcamo, Sicily, Italy","Castelvetrano, Sicily, Italy","Lercara Friddi, Sicily, Italy","Valledolmo, Sicily, Italy","Bisacquino, Sicily, Italy","Menfi, Sicily, Italy","Noto, Sicily, Italy","Palagonia, Sicily, Italy","Leonforte, Sicily, Italy","Sciacca, Sicily, Italy","Scicli, Sicily, Italy","Vittoria, Sicily, Italy","Comiso, Sicily, Italy","Rosolini, Sicily, Italy","Racalmuto, Sicily, Italy","Gela, Sicily, Italy","Ravanusa, Sicily, Italy","Campobello di Licata, Sicily, Italy","Favara, Sicily, Italy","Raffadali, Sicily, Italy"]
 
 england = ["Ely, England","Peterborough, England","Thetford, England","Wisbech, England","Spalding, England","King's Lynn, England","Bedford, England","Royston, England","Saffron Walden, England","Bury St Edmunds, England","Stamford, England","Grantham, England","Melton Mowbray, England","Corby, England","Kettering, England","Daventry, England","St Neots, England","Halstead, England","Braintree, England","Colchester, England","Boston, England","Newark-on-Trent, England","Lincoln, England","Gainsborough, England","Scunthorpe, England","North Walsham, England","Luton, England","Rugby, England","Desborough, England","Loughborough, England","Swadlincote, England","Chelmsford, England",]
-ruhr = ["Bochum, Germany","Oberhausen, Germany","Gelsenkirchen, Germany","Mulheim, Germany","Bottrop, Germany","Hagen, Germany","Hamm, Germany","Herne, Germany","Witten, Germany","Bergkamen, Germany","Hattingen, Germany","Herten, Germany","Recklinghausen, Germany","Moers, Germany","Dorsten, Germany","Dinslaken, Germany","Castrop-Rauxel, Germany","Gladbeck, Germany","Marl, Germany","Mulheim an der Ruhr, Germany",]
+ruhr = ["Bochum, Germany","Oberhausen, Germany","Gelsenkirchen, Germany","Bottrop, Germany","Hagen, Germany","Hamm, Germany","Herne, Germany","Witten, Germany","Bergkamen, Germany","Hattingen, Germany","Herten, Germany","Recklinghausen, Germany","Moers, Germany","Dorsten, Germany","Dinslaken, Germany","Castrop-Rauxel, Germany","Gladbeck, Germany","Marl, Germany","Mulheim an der Ruhr, Germany",]
 
 japan = ["Amagasaki, Japan","Kurashiki, Japan","Yokosuka, Japan","Nagasaki, Japan","Hirakata, Japan","Machida, Japan","Gifu-shi, Japan","Fujisawa, Japan","Toyonaka, Japan","Fukuyama, Japan","Toyohashi, Japan","Minato, Japan","Nara-shi, Japan","Toyota, Japan","Nagano, Japan","Iwaki, Japan","Asahikawa, Japan","Takatsuki, Japan","Okazaki, Japan","Suita, Japan","Wakayama, Japan","Koriyama, Japan","Kashiwa, Japan","Tokorozawa, Japan","Kawagoe, Japan","Kochi, Japan","Takamatsu, Japan","Toyama, Japan","Akita, Japan","Koshigaya, Japan","Miyazaki, Japan","Naha, Japan","Kasugai, Japan","Aomori, Japan","Otsu, Japan","Akashi, Japan",]
 
@@ -30,13 +30,24 @@ spain_central_districts = ["Casco Antiguo, Seville, Spain","Centro, Zaragoza, Sp
 from pca import calculate_pca
 from util.processing import remove_outliers, standarize
 
-df = remove_outliers(pd.read_csv("./spaind_england_network_orientation.csv", index_col=0))
-df = df[['one_way_percentage', 'share_of_separated_streets', 'avg_building_area', 'streets_per_node_avg']]
+df = remove_outliers(pd.read_csv("./ruhr_bavaria_all_for_ruhr_bavaria.csv", index_col=0))
+# df2 = remove_outliers(pd.read_csv("./poland_east_west_all_city_struct_ext.csv", index_col=0))
+df = df[[
+    # 'pubs_density',
+    #      'education_buildings_density',
+    #      'entertainment_buildings_density',
+    #      'shops_density',
+    #      'office_density',
+         'pubs_share',
+         'education_buildings_share',
+         'entertainment_buildings_share',
+         'shops_share',
+         'office_share']]
 standarized_df = standarize(df)
-standarized_df['is_sicily'] = [True if is_west in south_italy else False for is_west in standarized_df.index]
+standarized_df['is_sicily'] = [True if is_west in ruhr else False for is_west in standarized_df.index]
 pcaDf = calculate_pca(df)
 k_res = k_means(df)
-pcaDf['cluster'] = [True if place in england else False for place in pcaDf.index]
+pcaDf['cluster'] = [True if place in ruhr else False for place in pcaDf.index]
 # pcaDf['cluster'] = k_res
 
 

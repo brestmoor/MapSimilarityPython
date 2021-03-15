@@ -12,6 +12,7 @@ import osmApi as api
 from util.function_util import timed
 from subway import average_how_many_subway_routes_are_there_from_one_stop_to_another
 from subway import how_many_failures_can_network_handle
+from timeit import default_timer as timer
 
 ox.config(log_console=False, use_cache=True)
 
@@ -22,15 +23,20 @@ def _to_coordindates(shape):
 
 @timed
 def avg_short_distances_between_hospitals(place):
+    start = timer()
+    print("starting " + 'avg_short_distances_between_hospitals for' + place)
     network_graph = ox.graph_from_place(place, network_type='drive')
 
     hospitals = ox.geometries_from_place(place, {'amenity': 'hospital'})
+    got_graph_and_hospitals = timer()
     hospitals_centroids = hospitals.geometry.centroid
     centroids_as_tuples = [_to_coordindates(centroid) for centroid in hospitals_centroids]
     hospital_nodes = [ox.get_nearest_node(network_graph, coords_tuple) for coords_tuple in centroids_as_tuples]
     hospital_pairs = list(itertools.combinations(hospital_nodes, 2))
     shortest_paths = [ox.shortest_path(network_graph, *pair) for pair in hospital_pairs]
     sums = [sum(ox.utils_graph.get_route_edge_attributes(network_graph, path, 'length')) for path in shortest_paths]
+    summed = timer()
+    # print("got graph and df: " + str(got_graph_and_hospitals - start) + ", summed: " + str(summed - got_graph_and_hospitals))
     return np.mean(sums)
 
 
