@@ -10,11 +10,11 @@ all_criteria = {
         df_functions.average_street_length,
         df_functions.intersection_density_km,
         df_functions.buildings_density,
-        df_functions.distance_between_buildings,
+        df_functions.avg_distance_between_buildings,
         df_functions.natural_terrain_density,
     ],
     'buildings': [
-        df_functions.distance_between_buildings,
+        df_functions.avg_distance_between_buildings,
         df_functions.avg_distance_to_5_buildings,
         df_functions.buildings_uniformity,
         df_functions.avg_building_area,
@@ -28,7 +28,6 @@ all_criteria = {
         df_functions.primary_percentage,
         df_functions.secondary_percentage,
         df_functions.tertiary_percentage,
-        df_functions.distance_between_public_transport_stops,
         df_functions.all_railways_to_highway,
         df_functions.mode_dist_to_any_public_transport_stop,
         df_functions.average_dist_to_bus_stop
@@ -45,7 +44,7 @@ all_criteria = {
         df_functions.one_way_percentage,
         df_functions.intersection_density_km,
         df_functions.share_of_separated_streets,
-        df_functions.distance_between_buildings,
+        df_functions.avg_distance_between_buildings,
         df_functions.avg_dist_from_building_to_center,
         df_functions.buildings_uniformity,
         df_functions.share_of_buildings_near_center,
@@ -91,12 +90,12 @@ all_criteria = {
         df_functions.buildings_density,
         df_functions.natural_terrain_density
     ],
-    'buses_and_cycleways': [
+    'buses_and_trams': [
         df_functions.average_dist_to_bus_stop,
         df_functions.bus_routes_to_highways,
         df_functions.cycleways_to_highways,
         df_functions.tram_routes_to_highways,
-        graph_functions.avg_short_distances_between_hospitals,
+        df_functions.all_railways_to_highway
     ],
     'subway': [
         graph_functions.average_how_many_subway_routes_are_there_from_one_stop_to_another,
@@ -113,13 +112,6 @@ all_criteria = {
         df_functions.entertainment_buildings_dist_to_nearest,
         df_functions.shops_dist_to_nearest,
         df_functions.office_dist_to_nearest,
-    ],
-    'facilities_and_buses': [
-        df_functions.pubs_dist_to_nearest,
-        df_functions.education_buildings_dist_to_nearest,
-        df_functions.entertainment_buildings_dist_to_nearest,
-        df_functions.shops_dist_to_nearest,
-        df_functions.office_dist_to_nearest,
 
         df_functions.pubs_share,
         df_functions.education_buildings_share,
@@ -127,11 +119,7 @@ all_criteria = {
         df_functions.shops_share,
         df_functions.office_share,
 
-        graph_functions.avg_short_distances_between_hospitals,
-        # graph_functions.avg_short_distances_between_train_stations_and_city_center,
-        df_functions.bus_routes_to_highways,
-        # df_functions.average_dist_to_bus_stop,
-        df_functions.cycleways_to_highways,
+        df_functions.cycleways_to_highways
     ],
     'all_ruhr_bavaria': [
         df_functions.intersection_density_km,
@@ -160,32 +148,33 @@ all_criteria = {
         df_functions.average_dist_to_greenland,
 
         df_functions.average_street_length,
-
+        #
         df_functions.circuity_avg,
         df_functions.one_way_percentage,
         df_functions.share_of_separated_streets,
         df_functions.streets_in_radius_of_100_m,
         df_functions.avg_dist_between_crossroads,
-
+        #
         df_functions.circuity,
         df_functions.avg_distance_to_5_buildings,
-        df_functions.distance_between_buildings,
+        df_functions.avg_distance_between_buildings,
         df_functions.buildings_density_in_2km_radius,
         df_functions.avg_building_area,
-
+        #
         df_functions.network_orientation,
         df_functions.circuity_between_crossroads,
         df_functions.streets_per_node_avg,
-
+        #
         df_functions.buildings_uniformity,
         df_functions.share_of_buildings_near_center,
-
+        #
         df_functions.traffic_lights_share,
-
+        #
         df_functions.trunk_percentage,
         df_functions.primary_percentage,
         df_functions.secondary_percentage,
         df_functions.tertiary_percentage,
+        df_functions.no_of_streets_crossing_boundary,
 
     ],
     'all_spain_england': [
@@ -215,6 +204,16 @@ all_criteria = {
         df_functions.primary_percentage,
         df_functions.secondary_percentage,
         df_functions.tertiary_percentage,
+    ],
+    'crossing_boundary_and_1km': [
+        df_functions.no_of_streets_crossing_boundary,
+        df_functions.no_of_streets_crossing_boundary_proportional,
+
+        df_functions.circuity_avg_1km,
+        df_functions.street_density_km_1km,
+        df_functions.average_street_length_1km,
+        df_functions.intersection_density_km_1km,
+        df_functions.streets_per_node_avg_1km,
     ],
 
     'all_functions': df_functions.all_functions + graph_functions.all_functions

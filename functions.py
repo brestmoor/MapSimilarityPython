@@ -20,7 +20,7 @@ from util.graphUtils import great_circle_dist, path_len_digraph, shortest_path
 from util.spatial_util import distance_to_nearest, within, convert_crs, distances_to_multiple_nearest, simplify_bearing, \
     circle_radius
 
-ox.config(log_console=False, use_cache=True, )
+ox.config(log_console=False, use_cache=True, timeout=300)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 900)
 
@@ -81,6 +81,30 @@ def circuity_avg(place):
 def streets_per_node_avg(place):
     return basic_stats(place)['streets_per_node_avg']
 
+@timed
+def average_street_length_1km(place):
+    return basic_stats(place)['street_length_avg']
+
+
+@timed
+def intersection_density_km_1km(place):
+    return basic_stats(place)['intersection_density_km']
+
+
+@timed
+def street_density_km_1km(place):
+    return basic_stats(place)['street_density_km']
+
+
+@timed
+def circuity_avg_1km(place):
+    return basic_stats(place)['circuity_avg']
+
+
+@timed
+def streets_per_node_avg_1km(place):
+    return basic_stats(place)['streets_per_node_avg']
+
 
 @timed
 def one_way_percentage(place):
@@ -121,7 +145,7 @@ def secondary_percentage(place):
     highways = ox.geometries_from_place(place, {
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
     try:
-        primary_count = highways.loc[highways['highway'] == 'secondary'].osmid.count() / highways.osmid.count()
+        primary_count = highways[highways['highway'] == 'secondary'].osmid.count() / highways.osmid.count()
         return primary_count
     except KeyError as k:
         print(k)
@@ -152,6 +176,19 @@ def traffic_lights_share(place):
         print(k)
         print("Occured for " + str(place))
 
+
+@timed
+def crossing_share(place):
+    highways = ox.project_gdf(ox.geometries_from_place(place, {
+        'highway': ['trunk', 'primary', 'secondary', 'tertiary']}))
+
+    crossings = ox.geometries_from_place(place, {
+        'highway': 'crossing'})
+    try:
+        return len(crossings) / highways.geometry.length.sum()
+    except KeyError as k:
+        print(k)
+        print("Occured for " + str(place))
 
 
 @timed
@@ -263,18 +300,18 @@ def mode_dist_to_any_public_transport_stop(place):
     # print("graph: " + str(got_df_and_graph - start) + " distances: " + str(distances_calculated - got_df_and_graph))
     return distances.round(-1).mode()[0]
 
-
-@timed
-def distance_between_public_transport_stops(place):
-    print("average_dist_to_any_public_transport_stop" + place)
-    start = timer()
-    bus_df = ox.geometries_from_place(place, {'highway': 'bus_stop', 'public_transport': 'stop_position'})
-    if bus_df.empty:
-        return 1000000
-
-    bus_proj = ox.project_gdf(bus_df)
-    distances = bus_proj.apply(lambda row: distance_to_nearest(bus_proj, row.geometry), axis=1)
-    return distances.mean()
+#zle rezultaty bo, np 2 przystanki o jednej nazwie obok siebie w przeciwne strony
+# @timed
+# def distance_between_public_transport_stops(place):
+#     print("average_dist_to_any_public_transport_stop" + place)
+#     start = timer()
+#     bus_df = ox.geometries_from_place(place, {'highway': 'bus_stop', 'public_transport': 'stop_position'})
+#     if bus_df.empty:
+#         return 1000000
+#
+#     bus_proj = ox.project_gdf(bus_df)
+#     distances = bus_proj.apply(lambda row: distance_to_nearest(bus_proj, row.geometry), axis=1)
+#     return distances.mean()
 
 
 @timed
@@ -303,6 +340,14 @@ def no_of_streets_crossing_boundary(place):
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']}, buffer_dist=400))
 
     return sum(poi_highways.crosses(krakow_boundary.iloc[0].geometry))
+
+@timed
+def no_of_streets_crossing_boundary_proportional(place):
+    krakow_boundary = ox.project_gdf(ox.geocode_to_gdf(place))
+    poi_highways = ox.project_gdf(ox.geometries_from_place(place, {
+        'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']}, buffer_dist=400))
+
+    return sum(poi_highways.crosses(krakow_boundary.iloc[0].geometry)) / krakow_boundary.iloc[0].geometry.length
 
 @timed
 def natural_terrain_density(place):
@@ -406,26 +451,26 @@ def all_railways_to_highway(place):
 
     return tram_routes_proj.length.sum() / highways_proj.length.sum()  # ilosc krawedzi i suma jest 2 razy mniejsza niz w przypadku PostGIS
 
-
-@timed
-def avg_dist_between_crossroads(place):
-    start = timer()
-    cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
-    g = ox.graph_from_place(place, network_type='drive', custom_filter=cf)
-    g_proj = ox.project_graph(g)
-    consolidated = ox.consolidate_intersections(g_proj, rebuild_graph=True, tolerance=15, dead_ends=True)
-
-    after_consolidated = timer()
-    outdeg = consolidated.out_degree()
-    to_keep = [n for (n, deg) in outdeg if deg > 1]
-
-    consolidated_subgraph = consolidated.subgraph(to_keep)
-    undir = ox.get_undirected(consolidated)
-    before_mean = timer()
-    mean = np.mean([length_tuple[2] for length_tuple in undir.edges.data('length')])
-    after_mean = timer()
-    # print(str(after_mean - before_mean) + " " + str(before_mean - after_consolidated) + " " + str(after_consolidated - start))
-    return mean
+# podobno do avg street length
+# @timed
+# def avg_dist_between_crossroads(place):
+#     start = timer()
+#     cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
+#     g = ox.graph_from_place(place, network_type='drive', custom_filter=cf)
+#     g_proj = ox.project_graph(g)
+#     consolidated = ox.consolidate_intersections(g_proj, rebuild_graph=True, tolerance=15, dead_ends=True)
+#
+#     after_consolidated = timer()
+#     outdeg = consolidated.out_degree()
+#     to_keep = [n for (n, deg) in outdeg if deg > 1]
+#
+#     consolidated_subgraph = consolidated.subgraph(to_keep)
+#     undir = ox.get_undirected(consolidated)
+#     before_mean = timer()
+#     mean = np.mean([length_tuple[2] for length_tuple in undir.edges.data('length')])
+#     after_mean = timer()
+#     # print(str(after_mean - before_mean) + " " + str(before_mean - after_consolidated) + " " + str(after_consolidated - start))
+#     return mean
 
 
 # @timed
@@ -490,12 +535,12 @@ def share_of_separated_streets(place):
     highways = ox.geometries_from_place(place, {
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
     gdf = ox.project_gdf(highways)
-    gdf['no_of_neighbours'] = gdf.apply(lambda row: len(within(gdf, row.geometry.buffer(50))), axis=1)
-    return gdf[gdf['no_of_neighbours'] < 4].shape[0] / gdf.shape[0]
+    no_of_neighbors = gdf.apply(lambda row: len(within(gdf, row.geometry.buffer(50))), axis=1)
+    return no_of_neighbors[no_of_neighbors < 4].count() / gdf.osmid.count()
 
 
 @timed
-def distance_between_buildings(place):
+def avg_distance_between_buildings(place):
     print("downloading buildings for " + place)
     buildingsDf = ox.geometries_from_place(place, {
         'building': True})
@@ -552,7 +597,7 @@ def avg_dist_from_building_to_center(place):
 @timed
 def pubs_dist_to_nearest(place):
     return amenity_dist_to_nearest(place, {
-        "amenity": ["pub", "bar", "bbq", "cafe", "nightclub", "fast_food", "food_court", "ice_cream", "restaurant"]
+        "amenity": ["pub", "bar", "bbq", "cafe", "fast_food", "food_court", "ice_cream", "restaurant", "biergarten"]
     })
 
 
@@ -567,7 +612,7 @@ def education_buildings_dist_to_nearest(place):
 @timed
 def entertainment_buildings_dist_to_nearest(place):
     return amenity_dist_to_nearest(place, {
-        "amenity": ["casino", "cinema", "community_centre", "theatre", "language_school"],
+        "amenity": ["casino", "cinema", "community_centre", "theatre", "nightclub"],
         "leisure": ["dance", "bowling_alley", "amusement_arcade", "fitness_centre", "fitness_station"]
     })
 
@@ -575,7 +620,6 @@ def entertainment_buildings_dist_to_nearest(place):
 @timed
 def shops_dist_to_nearest(place):
     return amenity_dist_to_nearest(place, {"shop": True})
-
 
 @timed
 def office_dist_to_nearest(place):
@@ -585,7 +629,7 @@ def office_dist_to_nearest(place):
 @timed
 def pubs_share(place):
     return amenity_to_all_buildings(place, {
-        "amenity": ["pub", "bar", "bbq", "cafe", "nightclub", "fast_food", "food_court", "ice_cream", "restaurant", "biergarten"]
+        "amenity": ["pub", "bar", "bbq", "cafe", "fast_food", "food_court", "ice_cream", "restaurant", "biergarten"]
     })
 
 
@@ -600,7 +644,7 @@ def education_buildings_share(place):
 @timed
 def entertainment_buildings_share(place):
     return amenity_to_all_buildings(place, {
-        "amenity": ["casino", "cinema", "community_centre", "theatre", "language_school"],
+        "amenity": ["casino", "cinema", "community_centre", "theatre", "nightclub"],
         "leisure": ["dance", "bowling_alley", "amusement_arcade", "fitness_centre", "fitness_station"]
     })
 
@@ -635,7 +679,7 @@ def amenity_dist_to_nearest(place, amenities):
 def amenity_to_all_buildings(place, amenities):
     print("Starting amenity_to_all_buildings for: " + place + " " + str(amenities))
 
-    amenities_df = ox.project_gdf(ox.geometries_from_place(place, amenities))
+    amenities_df = ox.geometries_from_place(place, amenities)
     return len(amenities_df) / get_count(place, '"building"')
 
 @timed
@@ -680,13 +724,12 @@ def share_of_buildings_near_center(place):
 
     city_boundary_area = ox.project_gdf(ox.geocode_to_gdf(place)).area[0]
 
-    r_of_1_10th_circle = sqrt(city_boundary_area / (10 * np.math.pi))
+    r_of_1_10th_circle = sqrt(city_boundary_area / np.math.pi) / 10
 
     projected_point = convert_crs(Point(get_city_center_coordinates(place)), buildingsDf.crs)
     circle = projected_point.buffer(r_of_1_10th_circle)
 
     return sum([circle.contains(building) for building in buildingsDf.geometry.centroid]) / len(buildingsDf)
-
 
 @timed
 def avg_building_area(place):
@@ -695,8 +738,10 @@ def avg_building_area(place):
 
     buildingsDf = buildingsDf[[isinstance(x, Polygon) for x in buildingsDf.geometry]]
 
-    return buildingsDf.apply(lambda row: row.geometry.area, axis=1).mean()
+    return buildingsDf.geometry.area.mean()
 
+
+print(avg_building_area("Nowy Sacz, Poland"))
 
 @timed
 def circuity(place):
@@ -731,36 +776,37 @@ def network_orientation(place):
     return stdev(frequency, expected_number_in_group) / expected_number_in_group
 
 
-@timed
-def circuity_between_crossroads(place):
-    cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
-    g = ox.graph_from_place(place, network_type='drive', custom_filter=cf)
-    g_proj = ox.project_graph(g)
-    consolidated = ox.consolidate_intersections(g_proj, rebuild_graph=True, tolerance=15, dead_ends=True)
-
-    outdeg = consolidated.out_degree()
-    to_keep = [n for (n, deg) in outdeg if deg > 0]
-
-    consolidated_subgraph = consolidated.subgraph(to_keep)
-    undir = ox.get_undirected(consolidated_subgraph)
-
-    graph_distance = 0
-    haversine_distance = 0
-
-    real_lengths = []
-    haversine_lengths = []
-
-    for u, v, data in undir.edges(data=True):
-        real_length = data['length']
-        graph_distance += real_length
-
-        haversine_ln = ox.distance.euclidean_dist_vec(undir.nodes[u]['y'], undir.nodes[u]['x'], undir.nodes[v]['y'], undir.nodes[v]['x'])
-        haversine_distance += haversine_ln
-
-        real_lengths.append(real_length)
-        haversine_lengths.append(haversine_ln)
-
-    return graph_distance / haversine_distance
+# to samo co circuity_avg
+# @timed
+# def circuity_between_crossroads(place):
+#     cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
+#     g = ox.graph_from_place(place, network_type='drive', custom_filter=cf)
+#     g_proj = ox.project_graph(g)
+#     consolidated = ox.consolidate_intersections(g_proj, rebuild_graph=True, tolerance=15, dead_ends=True)
+#
+#     outdeg = consolidated.out_degree()
+#     to_keep = [n for (n, deg) in outdeg if deg > 0]
+#
+#     consolidated_subgraph = consolidated.subgraph(to_keep)
+#     undir = ox.get_undirected(consolidated_subgraph)
+#
+#     graph_distance = 0
+#     haversine_distance = 0
+#
+#     real_lengths = []
+#     haversine_lengths = []
+#
+#     for u, v, data in undir.edges(data=True):
+#         real_length = data['length']
+#         graph_distance += real_length
+#
+#         haversine_ln = ox.distance.euclidean_dist_vec(undir.nodes[u]['y'], undir.nodes[u]['x'], undir.nodes[v]['y'], undir.nodes[v]['x'])
+#         haversine_distance += haversine_ln
+#
+#         real_lengths.append(real_length)
+#         haversine_lengths.append(haversine_ln)
+#
+#     return graph_distance / haversine_distance
 
 
 # circuity_between_crossroads("Ronda, Spain")
@@ -800,7 +846,8 @@ all_functions = [
     cycleways_to_highways,
     bus_routes_to_highways,
     tram_routes_to_highways,
-    avg_dist_between_crossroads,
     streets_in_radius_of_100_m,
     share_of_separated_streets
 ]
+
+

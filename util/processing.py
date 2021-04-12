@@ -30,4 +30,5 @@ def standarize(df):
 
 
 def preprocess(df):
+    df = df.dropna()
     return standarize(remove_outliers(df))

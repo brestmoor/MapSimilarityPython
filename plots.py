@@ -30,7 +30,13 @@ spain_central_districts = ["Casco Antiguo, Seville, Spain","Centro, Zaragoza, Sp
 from pca import calculate_pca
 from util.processing import remove_outliers, standarize
 
-df = remove_outliers(pd.read_csv("./ruhr_bavaria_all_for_ruhr_bavaria.csv", index_col=0))
+main_df = pd.read_csv("./poland_north_south_with_boundaries_de.csv", index_col=0)
+main_df_no_nan = main_df.dropna()
+# previously_failed = pd.read_csv("./ruhr_bavaria_only_failed.csv", index_col=0)
+#
+# main_df_sorted = main_df.combine_first(previously_failed).sort_values("group")
+df = remove_outliers(main_df)
+# df = remove_outliers(previously_failed)
 # df2 = remove_outliers(pd.read_csv("./poland_east_west_all_city_struct_ext.csv", index_col=0))
 df = df[[
     # 'pubs_density',
@@ -47,7 +53,7 @@ standarized_df = standarize(df)
 standarized_df['is_sicily'] = [True if is_west in ruhr else False for is_west in standarized_df.index]
 pcaDf = calculate_pca(df)
 k_res = k_means(df)
-pcaDf['cluster'] = [True if place in ruhr else False for place in pcaDf.index]
+pcaDf['cluster'] = [True if place in north else False for place in pcaDf.index]
 # pcaDf['cluster'] = k_res
 
 

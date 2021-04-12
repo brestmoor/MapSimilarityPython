@@ -11,7 +11,7 @@ def get_ways_in_relation(addr, selector):
 
 
 def get_count(addr, selector, element_type='way'):
-    nominatim = Nominatim()
+    nominatim = Nominatim(endpoint='https://overpass.kumi.systems/api/')
     areaId = nominatim.query(addr).areaId()
     overpass = Overpass(endpoint='https://overpass.kumi.systems/api/')
     query = overpassQueryBuilder(area=areaId, selector=selector, out='count', elementType=element_type)

@@ -62,11 +62,11 @@
       "Algemesi, Spain",
       "Sueca, Spain",
       "Albacete, Spain",
-      "Villarreal, Spain",
+      "Vila-real, Spain",
       "Borriana, Spain",
       "Hellin, Spain"
   ],
   "criteria": [
-    "all_spain_england"
+    "crossing_boundary_and_1km"
   ]
 }
