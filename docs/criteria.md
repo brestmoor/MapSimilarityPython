@@ -23,7 +23,7 @@ Dla danego miasta ```basic_stats``` liczone jest w następujący sposób:
 ```python
 # filtry zawężające typy dróg
 custom_filter = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
-# pobieranie mapy z OSM do grafu NetworkX
+# pobieranie mapy z OSM do grafu NetworkX. Domyślnie pobierany graf jest grafem uproszczonym
 G = ox.graph_from_place(city_name, network_type='drive', custom_filter=custom_filter)
 # projekcja do najlepszego lokalnego układu odniesienia (CRS dla strefy UTM w której leży centroid grafu)
 G_proj = ox.project_graph(G)
@@ -32,6 +32,7 @@ nodes_proj = ox.graph_to_gdfs(G_proj, edges=False)
 # wyliczanie powierzchni miasta
 graph_area_m = nodes_proj.unary_union.convex_hull.area
 
+# wyliczanie basic_stats. Parametr clean_intersects powoduje uproszczenie skrzyżowań
 basic_stats =  ox.basic_stats(G, area=graph_area_m, clean_intersects=True, circuity_dist='euclidean')
 ```
 
