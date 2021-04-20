@@ -38,7 +38,7 @@
     "Evreux, France",
     "Beauvais, France",
     "Amiens, France",
-    "Laigle, France",
+    "L'aigle, France",
     "Lisieux, France",
     "Laval, France",
     "Lamballe, France",
@@ -61,6 +61,6 @@
     "Niort, France"
   ],
   "criteria": [
-    "all_ruhr_bavaria"
+    "historic"
   ]
 }

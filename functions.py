@@ -15,7 +15,7 @@ from shapely.geometry import Point
 
 from util.function_util import memoize, timed
 from osmApi import get_ways_in_relation, get_city_center, get_city_center_coordinates, get_city_center_geometry, \
-    get_count
+    get_count, get_city_population
 from util.graphUtils import great_circle_dist, path_len_digraph, shortest_path
 from util.spatial_util import distance_to_nearest, within, convert_crs, distances_to_multiple_nearest, simplify_bearing, \
     circle_radius
@@ -342,6 +342,13 @@ def no_of_streets_crossing_boundary(place):
     return sum(poi_highways.crosses(krakow_boundary.iloc[0].geometry))
 
 @timed
+def no_of_railways_crossing_boundary(place):
+    krakow_boundary = ox.project_gdf(ox.geocode_to_gdf(place))
+    railwaysDf = ox.project_gdf(ox.geometries_from_place(place, {'railway': True}, buffer_dist=400))
+
+    return sum(railwaysDf.crosses(krakow_boundary.iloc[0].geometry))
+
+@timed
 def no_of_streets_crossing_boundary_proportional(place):
     krakow_boundary = ox.project_gdf(ox.geocode_to_gdf(place))
     poi_highways = ox.project_gdf(ox.geometries_from_place(place, {
@@ -625,6 +632,29 @@ def shops_dist_to_nearest(place):
 def office_dist_to_nearest(place):
     return amenity_dist_to_nearest(place, {"office": True})
 
+@timed
+def historic_building_dist_to_nearest(place):
+    return amenity_dist_to_nearest(place, {"historic": True})
+
+@timed
+def police_building_dist_to_nearest(place):
+    return amenity_dist_to_nearest(place, {"amenity": "police"})
+
+
+@timed
+def fire_station_dist_to_nearest(place):
+    return amenity_dist_to_nearest(place, {"amenity": "fire_station"})
+
+
+@timed
+def hotels_dist_to_nearest(place):
+    return amenity_dist_to_nearest(place, {"tourism": ['hotel', 'hostel', 'motel', 'guest_house']})
+
+
+@timed
+def bench_dist_to_nearest(place):
+    return amenity_dist_to_nearest(place, {"amenity": 'bench'})
+
 
 @timed
 def pubs_share(place):
@@ -659,6 +689,33 @@ def office_share(place):
     return amenity_to_all_buildings(place, {"office": True})
 
 
+@timed
+def historic_building_share(place):
+    return amenity_to_all_buildings(place, {"historic": True})
+
+@timed
+def police_building_share(place):
+    return amenity_to_all_buildings(place, {"amenity": "police"})
+
+@timed
+def fire_stations_share(place):
+    return amenity_to_all_buildings(place, {"amenity": "fire_station"})
+
+
+@timed
+def hotels_share(place):
+    return amenity_to_all_buildings(place, {"tourism": ['hotel', 'hostel', 'motel', 'guest_house']})
+
+
+@timed
+def hospitals_share(place):
+    return amenity_to_all_buildings(place, {"amenity": "hospital"})
+#
+# @timed
+# def playground_share(place):
+#     return amenity_to_all_buildings(place, {"leisure": "playground"})
+
+
 def amenity_dist_to_nearest(place, amenities):
     start = timer()
     print("Starting amenity_density for: " + place + " " + str(amenities))
@@ -674,6 +731,7 @@ def amenity_dist_to_nearest(place, amenities):
     # print("Getting df: " + str(got_amenities - start) + ", distances to nearest: " + str(calculated_dist_to_nearest - got_amenities)
     #       + ", mean: " + str(calculated_mean - calculated_dist_to_nearest))
     return mean_of_distances
+
 
 
 def amenity_to_all_buildings(place, amenities):
@@ -741,7 +799,6 @@ def avg_building_area(place):
     return buildingsDf.geometry.area.mean()
 
 
-print(avg_building_area("Nowy Sacz, Poland"))
 
 @timed
 def circuity(place):
@@ -774,6 +831,18 @@ def network_orientation(place):
     frequency = bearings.groupby(bearings).count()
 
     return stdev(frequency, expected_number_in_group) / expected_number_in_group
+
+
+@timed
+def population_per_km(place):
+    population = get_city_population(place)
+    city_boundary = ox.project_gdf(ox.geocode_to_gdf(place))
+    boundary_in_km2 = city_boundary.area[0] / 1000000
+
+    if population is None:
+        return None
+    else:
+        return population / boundary_in_km2
 
 
 # to samo co circuity_avg

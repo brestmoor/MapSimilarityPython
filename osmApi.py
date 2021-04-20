@@ -12,11 +12,23 @@ def get_ways_in_relation(addr, selector):
 
 def get_count(addr, selector, element_type='way'):
     nominatim = Nominatim(endpoint='https://overpass.kumi.systems/api/')
-    areaId = nominatim.query(addr).areaId()
+    areaId = _get_area_id(addr)
     overpass = Overpass(endpoint='https://overpass.kumi.systems/api/')
     query = overpassQueryBuilder(area=areaId, selector=selector, out='count', elementType=element_type)
     result = overpass.query(query)
     return result.countElements()
+
+def _get_area_id(place):
+    nominatim = Nominatim(endpoint='https://overpass.kumi.systems/api/')
+    result = nominatim.query(place)
+    areaId = result.areaId()
+    if areaId is not None:
+        return areaId
+    else:
+        json = result.toJSON()
+        if json and 'osm_type' in json[0] and 'osm_id' in json[0]:
+            return json[0]['osm_id'] + 2400000000
+        return None
 
 @timed
 def get_centroid(addr, selector, element_type='way'):
@@ -62,15 +74,31 @@ def get_city_center(place):
     return (city_centers + town_centers)[0]
 
 
+def get_city_tags(place):
+    nominatim = Nominatim()
+    overpass = Overpass()
+    areaId = nominatim.query(place).areaId()
+    query_city = overpassQueryBuilder(area=areaId, elementType='relation')
+    result = overpass.query(query_city)
+    return result and result.elements() and result.elements()[0].tags()
+
+
 def get_city_center_geometry(place):
     return get_city_center(place).geometry()
+
+
+def get_city_population(place):
+    center = get_city_center(place)
+    tags = get_city_tags(place)
+    population_from_admin_center = 'population' in center.tags() and int(center.tags()['population']) or None
+    population_from_city_relation = 'population' in tags and int(tags['population']) or None
+    return population_from_admin_center or population_from_city_relation
 
 
 def get_city_center_coordinates(place):
     center = get_city_center(place)
     geometry = center.geometry()
     return geometry.coordinates[0], geometry.coordinates[1]
-
 
 # print(get_city_center('Kielce, Poland'))
 # get_centroid("Bochum, Germany", '"building"')
