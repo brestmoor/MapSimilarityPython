@@ -14,7 +14,7 @@ from subway import average_how_many_subway_routes_are_there_from_one_stop_to_ano
 from subway import how_many_failures_can_network_handle
 from timeit import default_timer as timer
 
-ox.config(log_console=False, use_cache=True)
+# ox.config(log_console=False, use_cache=True)
 
 
 def _to_coordindates(shape):

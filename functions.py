@@ -20,7 +20,7 @@ from util.graphUtils import great_circle_dist, path_len_digraph, shortest_path
 from util.spatial_util import distance_to_nearest, within, convert_crs, distances_to_multiple_nearest, simplify_bearing, \
     circle_radius
 
-ox.config(log_console=False, use_cache=True, timeout=300)
+ox.config(log_console=False, use_cache=False, timeout=300, overpass_endpoint='http://localhost:12356/api')
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 900)
 
@@ -131,10 +131,13 @@ def trunk_percentage(place):
 
 @timed
 def primary_percentage(place):
+    start = timer()
     highways = ox.geometries_from_place(place, {
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
+    got_df = timer()
     try:
         primary_count = highways.loc[highways['highway'] == 'primary'].osmid.count() / highways.osmid.count()
+        print("df took:" + str(got_df - start) + " calc: " + str(timer() - got_df))
         return primary_count
     except KeyError as k:
         print(k)
@@ -238,11 +241,12 @@ def average_dist_to_bus_stop(place):
     if bus_df.empty:
         return 1000000
 
+    got_stops = timer()
 
     buildingsDf = ox.geometries_from_place(place, {
         'building': True})
 
-    got_df_and_graph = timer()
+    got_buildings = timer()
 
     buildings_polygons = buildingsDf[[isinstance(x, Polygon) for x in buildingsDf.geometry]]
 
@@ -250,9 +254,11 @@ def average_dist_to_bus_stop(place):
     bus_proj = ox.project_gdf(bus_df)
     distances = buildings_proj.iloc[::10].apply(lambda row: distance_to_nearest(bus_proj, row.geometry), axis=1)
     distances_calculated = timer()
-    # print("graph: " + str(got_df_and_graph - start) + " distances: " + str(distances_calculated - got_df_and_graph))
+    print("stops: " + str(got_stops - start) + " graph:  " + str(got_buildings - got_stops) + "distances: " + str(distances_calculated - got_buildings))
     return distances.mean()
 
+# primary_percentage("Monaco")
+# average_dist_to_bus_stop("Monaco")
 
 @timed
 def average_dist_to_any_public_transport_stop(place):
@@ -340,6 +346,13 @@ def no_of_streets_crossing_boundary(place):
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']}, buffer_dist=400))
 
     return sum(poi_highways.crosses(krakow_boundary.iloc[0].geometry))
+
+@timed
+def no_of_railways_crossing_boundary(place):
+    krakow_boundary = ox.project_gdf(ox.geocode_to_gdf(place))
+    railwaysDf = ox.project_gdf(ox.geometries_from_place(place, {'railway': True}, buffer_dist=400))
+
+    return sum(railwaysDf.crosses(krakow_boundary.iloc[0].geometry))
 
 @timed
 def no_of_railways_crossing_boundary(place):
@@ -708,6 +721,26 @@ def hotels_share(place):
 
 
 @timed
+def tourism_buildings_share(place):
+    return amenity_to_all_buildings(place, {"tourism": True})
+
+
+@timed
+def attractions_share(place):
+    return amenity_to_all_buildings(place, {"tourism": ['attraction']})
+
+
+@timed
+def artwork_share(place):
+    return amenity_to_all_buildings(place, {"tourism": ['artwork']})
+
+
+@timed
+def camp_site_share(place):
+    return amenity_to_all_buildings(place, {"tourism": ['caravan_site', 'camp_site', 'camp_pitch']})
+
+
+@timed
 def hospitals_share(place):
     return amenity_to_all_buildings(place, {"amenity": "hospital"})
 #
@@ -878,7 +911,8 @@ def population_per_km(place):
 #     return graph_distance / haversine_distance
 
 
-# circuity_between_crossroads("Ronda, Spain")
+gdf = ox.geocode_to_gdf("Krakow, Poland")
+print()
 
 @timed
 def roads_curvature(place):

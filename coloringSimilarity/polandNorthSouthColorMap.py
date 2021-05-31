@@ -25,5 +25,5 @@ df = df[~df.index.duplicated()]
 
 pca = calculate_pca(df, n_components=1)
 
-display_similarity_on_map2(pca['PC1'], countries, "Poland", linewidth=0.2, scale_cities=2, cmap='cool')
+display_similarity_on_map2(pca['PC1'], countries, "Poland", linewidth=0.2, scale_cities=3, cmap='cool')
 plt.show()

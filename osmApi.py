@@ -1,5 +1,7 @@
 from OSMPythonTools.nominatim import Nominatim
 from OSMPythonTools.overpass import overpassQueryBuilder, Overpass
+from OSMPythonTools.api import Api
+
 
 from util.function_util import timed
 
@@ -69,18 +71,17 @@ def get_city_center(place):
     town_centers = result_town.elements()
     if len(city_centers + town_centers) > 1:
         print(f'Found more than one city center for {place}')
-    if len(city_centers + town_centers) == 0:
-        raise Exception(f'Found no city centers for {place}')
-    return (city_centers + town_centers)[0]
+    # if len(city_centers + town_centers) == 0:
+    #     raise Exception(f'Found no city centers for {place}')
+    return (city_centers + town_centers)[0] if city_centers + town_centers else []
 
 
 def get_city_tags(place):
     nominatim = Nominatim()
-    overpass = Overpass()
-    areaId = nominatim.query(place).areaId()
-    query_city = overpassQueryBuilder(area=areaId, elementType='relation')
-    result = overpass.query(query_city)
-    return result and result.elements() and result.elements()[0].tags()
+    result = nominatim.query(place)
+    relation_id = result.toJSON()[0]['osm_id']
+    relation_results = Api().query('relation/' + str(relation_id))
+    return relation_results.tags()
 
 
 def get_city_center_geometry(place):
@@ -90,7 +91,7 @@ def get_city_center_geometry(place):
 def get_city_population(place):
     center = get_city_center(place)
     tags = get_city_tags(place)
-    population_from_admin_center = 'population' in center.tags() and int(center.tags()['population']) or None
+    population_from_admin_center = center and 'population' in center.tags() and int(center.tags()['population']) or None
     population_from_city_relation = 'population' in tags and int(tags['population']) or None
     return population_from_admin_center or population_from_city_relation
 

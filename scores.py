@@ -4,7 +4,7 @@ import traceback
 
 
 def calculate_scores(places, functions):
-    pool = ProcessPool(nodes=2)
+    pool = ProcessPool(nodes=8)
     results = list(pool.map(calc_for_city_fn_producer(functions), places))
     result_df = pd.DataFrame(results, columns=[func.original_func_name for func in functions], index=places)
     return result_df
