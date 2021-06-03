@@ -20,7 +20,7 @@ from util.graphUtils import great_circle_dist, path_len_digraph, shortest_path
 from util.spatial_util import distance_to_nearest, within, convert_crs, distances_to_multiple_nearest, simplify_bearing, \
     circle_radius
 
-ox.config(log_console=False, use_cache=False, timeout=300, overpass_endpoint='http://localhost:12356/api')
+ox.config(log_console=False, use_cache=True, timeout=300, overpass_endpoint='http://localhost:12345/api')
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 900)
 
@@ -910,9 +910,6 @@ def population_per_km(place):
 #
 #     return graph_distance / haversine_distance
 
-
-gdf = ox.geocode_to_gdf("Krakow, Poland")
-print()
 
 @timed
 def roads_curvature(place):

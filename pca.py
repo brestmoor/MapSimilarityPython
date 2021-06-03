@@ -14,6 +14,6 @@ def pca_without_preprocessing(scores_df, n_components):
     return pd.DataFrame(data=principal_components, index=scores_df.index, columns=columns)
 
 
-def calculate_pca(df, n_components=2):
-    df = preprocess(df)
+def calculate_pca(df, n_components=2, remove_outliers=True):
+    df = preprocess(df, remove_outliers)
     return pca_without_preprocessing(df, n_components)

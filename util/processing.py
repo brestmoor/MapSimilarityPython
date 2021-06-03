@@ -21,7 +21,8 @@ def normalize(x, x_max):
 
 
 def remove_outliers(df):
-    return df[(np.abs(stats.zscore(df)) < 3).all(axis=1)]
+    df_to_remove_outliers = df.loc[:, (df != 0).any(axis=0)]
+    return df[(np.abs(stats.zscore(df_to_remove_outliers)) < 3).all(axis=1)]
 
 
 def standarize(df):
@@ -29,6 +30,12 @@ def standarize(df):
     return pd.DataFrame(standarized_matrix, index=df.index, columns=df.columns)
 
 
-def preprocess(df):
+def preprocess(df, should_remove_outliers=True):
     df = df.dropna()
-    return standarize(remove_outliers(df))
+    df_outlier_removed = remove_outliers(df) if should_remove_outliers else df
+    if df_outlier_removed.empty:
+        print('Df empty after outliers removal')
+        df_to_standardize = df
+    else:
+        df_to_standardize = df_outlier_removed
+    return standarize(df_to_standardize)
