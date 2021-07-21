@@ -21,6 +21,8 @@ def distances_to_multiple_nearest(gdf, polygon, neignours_count):
     possible_matches_idx = list(gdf.sindex.nearest(polygon.bounds, neignours_count + 5))
     possible_matches = gdf.iloc[possible_matches_idx]
     possible_matches = possible_matches[possible_matches.geometry.convex_hull != polygon.convex_hull]
+    if possible_matches.empty:
+        return None
     possible_matches['dist_to_polygon'] = possible_matches.apply(
         lambda row: polygon.centroid.distance(row.geometry.centroid), axis=1)
     return list(possible_matches.sort_values('dist_to_polygon')[:neignours_count]['dist_to_polygon'])

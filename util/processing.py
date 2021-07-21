@@ -32,10 +32,14 @@ def standarize(df):
 
 def preprocess(df, should_remove_outliers=True):
     df = df.dropna()
+    if df.empty:
+        print('Df empty after Nan removal')
+        return df
+
     df_outlier_removed = remove_outliers(df) if should_remove_outliers else df
+
     if df_outlier_removed.empty:
         print('Df empty after outliers removal')
-        df_to_standardize = df
+        return df
     else:
-        df_to_standardize = df_outlier_removed
-    return standarize(df_to_standardize)
+        return standarize(df_outlier_removed)

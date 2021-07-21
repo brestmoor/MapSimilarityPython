@@ -22,6 +22,7 @@ all_criteria = {
         df_functions.cycleways_to_highways,
         df_functions.average_dist_to_park,
         df_functions.crossing_share,
+        df_functions.crossing_dist_to_nearest,
         df_functions.traffic_lights_share,
         # df_functions.bench_dist_to_nearest,
 

@@ -12,7 +12,7 @@ ox.config(log_console=False, use_cache=True)
 names = ['Ustron, Poland', 'Wisla, Poland', 'Szczyrk, Poland', 'Wegierska Gorka, Poland', 'Zywiec, Poland','Zawoja, Poland', 'Sucha Beskidzka, Poland', 'Spytkowice, Poland', 'Rabka-Zdroj, Poland', 'Nowy Targ, Poland','Bialka Tatrzanska, Poland', 'Bukowina Tatrzanska, Poland', 'Kluszkowce, Poland', 'Szczawnica, Poland','Piwniczna-Zdroj, Poland', 'Kasina Wielka, Poland', 'Limanowa, Poland', 'Szaflary, Poland','Ludzmierz, Poland', 'Chlopy, Zachodniopomorskie, Poland', 'Uniescie, Zachodniopomorskie, Poland','Miedzyzdroje, Zachodniopomorskie, Poland', 'Dziwnow, Zachodniopomorskie, Poland','Kolobrzeg, Zachodniopomorskie, Poland', 'Mielno, Zachodniopomorskie, Poland','Darlowo, Zachodniopomorskie, Poland', 'Grzybowo, Zachodniopomorskie, Poland','Kamien Pomorski, Zachodniopomorskie,  Poland', 'Gaski, Zachodniopomorskie, Poland','Sarbinowo, Zachodniopomorskie, Poland', 'Ustka, Pomorskie, Poland', 'Rowy, Pomorskie, Poland','Leba, Pomorskie, Poland', 'Puck, Pomorskie, Poland', 'Jastarnia, Pomorskie, Poland','Karwia, Pomorskie, Poland', 'Karwia, Pomorskie, Poland', 'Jastrzebia Gora, Pomorskie, Poland','Chlapowo, Pomorskie, Poland', 'Hel, Pomorskie, Poland']
 countries = ["Poland"]
 
-df = pd.read_csv("../poland_north_south_with_boundaries_de.csv", index_col=0)
+df = pd.read_csv("../out/poland_north_south_with_boundaries_de_by_rel_id.csv", index_col=0)
 df = df[[
     'intersection_density_km',
     'street_density_km',

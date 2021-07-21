@@ -13,7 +13,6 @@ def get_ways_in_relation(addr, selector):
 
 
 def get_count(addr, selector, element_type='way'):
-    nominatim = Nominatim(endpoint='https://overpass.kumi.systems/api/')
     areaId = _get_area_id(addr)
     overpass = Overpass(endpoint='https://overpass.kumi.systems/api/')
     query = overpassQueryBuilder(area=areaId, selector=selector, out='count', elementType=element_type)
@@ -21,6 +20,9 @@ def get_count(addr, selector, element_type='way'):
     return result.countElements()
 
 def _get_area_id(place):
+    if place.isnumeric():
+        return str(int(place) + 3600000000)
+
     nominatim = Nominatim(endpoint='https://overpass.kumi.systems/api/')
     result = nominatim.query(place)
     areaId = result.areaId()
@@ -34,8 +36,7 @@ def _get_area_id(place):
 
 @timed
 def get_centroid(addr, selector, element_type='way'):
-    nominatim = Nominatim()
-    areaId = nominatim.query(addr).areaId()
+    areaId = _get_area_id(addr)
     overpass = Overpass(endpoint='https://overpass.kumi.systems/api/')
     query = overpassQueryBuilder(area=areaId, selector=selector, out='center', elementType=element_type)
     overpass.deleteQueryFromCache(query)
@@ -44,8 +45,7 @@ def get_centroid(addr, selector, element_type='way'):
 
 
 def overpass_query(addr, selector, element_type):
-    nominatim = Nominatim()
-    areaId = nominatim.query(addr).areaId()
+    areaId = _get_area_id(addr)
     overpass = Overpass(endpoint='https://overpass.kumi.systems/api/')
     query = overpassQueryBuilder(area=areaId, elementType=element_type, selector=selector)
     try:
@@ -60,24 +60,31 @@ def filter_ways_from_relation(relation):
 
 
 def get_city_center(place):
-    nominatim = Nominatim()
     overpass = Overpass()
-    areaId = nominatim.query(place).areaId()
+    areaId = _get_area_id(place)
     query_city = overpassQueryBuilder(area=areaId, elementType='node', selector='"place"="city"', includeGeometry=True)
     query_town = overpassQueryBuilder(area=areaId, elementType='node', selector='"place"="town"', includeGeometry=True)
+    query_village = overpassQueryBuilder(area=areaId, elementType='node', selector='"place"="village"', includeGeometry=True)
+
     result_city = overpass.query(query_city)
     result_town = overpass.query(query_town)
+    result_village = overpass.query(query_village)
+
     city_centers = result_city.elements()
     town_centers = result_town.elements()
-    if len(city_centers + town_centers) > 1:
+    village_centers = result_village.elements()
+    if len(city_centers + town_centers + village_centers) > 1:
         print(f'Found more than one city center for {place}')
-    # if len(city_centers + town_centers) == 0:
-    #     raise Exception(f'Found no city centers for {place}')
-    return (city_centers + town_centers)[0] if city_centers + town_centers else []
+    if not city_centers + town_centers + village_centers:
+        raise Exception('No city center found for ' + place)
+    return (city_centers + town_centers + village_centers)[0]
 
 
 def get_city_tags(place):
-    nominatim = Nominatim()
+    if place.isnumeric():
+        tags = Api().query('relation/' + str(place)).tags()
+        return tags
+    nominatim = Nominatim(endpoint='https://overpass.kumi.systems/api/')
     result = nominatim.query(place)
     relation_id = result.toJSON()[0]['osm_id']
     relation_results = Api().query('relation/' + str(relation_id))
@@ -101,6 +108,3 @@ def get_city_center_coordinates(place):
     geometry = center.geometry()
     return geometry.coordinates[0], geometry.coordinates[1]
 
-# print(get_city_center('Kielce, Poland'))
-# get_centroid("Bochum, Germany", '"building"')
-# print()

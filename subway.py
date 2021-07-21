@@ -5,6 +5,7 @@ import numpy as np
 import osmnx as ox
 from osmnx._errors import EmptyOverpassResponse
 
+from ox_api import graph_from_place_or_rel_id
 from util.function_util import timed
 from util.graphUtils import find_paths_not_longer_than, path_len, path_len_digraph
 
@@ -12,13 +13,14 @@ from util.graphUtils import find_paths_not_longer_than, path_len, path_len_digra
 @timed
 def how_many_failures_can_network_handle(place):
     try:
-        G = ox.graph_from_place(place,
+        G = graph_from_place_or_rel_id(place,
                                 retain_all=True, truncate_by_edge=True, buffer_dist=500, simplify=False,
                                 custom_filter='["railway"~"subway"][!service]')
     except EmptyOverpassResponse:
         return 0
-
-    ox.utils_graph.add_edge_lengths(G)
+    if not G or G.empty:
+        return None
+    ox.distance.add_edge_lengths(G)
     subway_stops = ox.geometries_from_place(place, {'railway': 'stop', 'subway': 'yes'})
 
     if subway_stops.empty:
@@ -53,12 +55,14 @@ def how_many_failures_can_network_handle(place):
 @timed
 def average_how_many_subway_routes_are_there_from_one_stop_to_another(place):
     try:
-        G = ox.graph_from_place(place,
+        G = graph_from_place_or_rel_id(place,
                                 retain_all=True, truncate_by_edge=True, buffer_dist=500, simplify=False,
                                 custom_filter='["railway"~"subway"][!service]')
     except EmptyOverpassResponse:
         return 0
-    ox.utils_graph.add_edge_lengths(G)
+    if not G or G.empty:
+        return None
+    ox.distance.add_edge_lengths(G)
     subway_stops = ox.geometries_from_place(place, {'railway': 'stop', 'subway': 'yes'})
 
     if subway_stops.empty:

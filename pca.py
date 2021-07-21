@@ -16,4 +16,8 @@ def pca_without_preprocessing(scores_df, n_components):
 
 def calculate_pca(df, n_components=2, remove_outliers=True):
     df = preprocess(df, remove_outliers)
+    if df.empty:
+        return df
+    if len(df) < n_components:
+        raise Exception("Number of rows must be bigger then " + str(n_components))
     return pca_without_preprocessing(df, n_components)
