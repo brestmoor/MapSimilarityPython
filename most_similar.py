@@ -2,8 +2,9 @@ import json
 
 from numpy import ndenumerate
 
-from experiments import get_scores_and_similarity
+from experiments import get_scores_and_similarity, get_scores
 from similarity import calculate_similarity
+from util.processing import remove_outliers
 
 
 def find_most_similar_from_json(path):
@@ -15,12 +16,13 @@ def find_most_similar_from_json(path):
 
 
 def find_most_similar_in_groups(groups, criteria_string):
-    scores, similarity = get_scores_and_similarity([place for group in groups for place in group], criteria_string)
-    return find_most_similar_in_df(groups, similarity)
+    scores = get_scores([place for group in groups for place in group], criteria_string)
+    return find_most_similar_in_df(groups, scores)
 
 
-def find_most_similar_in_df(groups, scores):
-    similarityDf = calculate_similarity(scores)
+def find_most_similar_in_df(groups, scores, method='euclidean', should_remove_outliers=False):
+    scores = remove_outliers(scores) if should_remove_outliers else scores
+    similarityDf = calculate_similarity(scores, method)
     max_similarity = 0
     best_cities = ()
     for first_city in similarityDf.index:

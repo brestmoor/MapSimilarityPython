@@ -179,9 +179,6 @@ def get_scores(places, criteria_str):
     scores = calculate_scores(places, criteria)
     return scores
 
-from inspect import getmembers, isfunction
-
-import functions as fn
 
 all_fns_names = ['avg_distance_between_buildings',
 'buildings_density',

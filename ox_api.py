@@ -47,3 +47,4 @@ def _graph_by_rel_id(rel_id, network_type, custom_filter, simplify, retain_all):
 def _geometries_by_rel_id(rel_id, tags, buffer):
     gdf = ox.geocode_to_gdf('R' + rel_id, by_osmid=True, buffer_dist=buffer)
     return ox.geometries_from_polygon(gdf.iloc[0].geometry, tags=tags)
+

@@ -2,6 +2,8 @@ import logging
 import sys
 import traceback
 import os
+from timeit import default_timer as timer
+
 
 import pandas as pd
 from OSMPythonTools.api import Api
@@ -13,6 +15,8 @@ logger = logging.getLogger('MapSimilarityPython')
 
 def calculate_scores(places, functions):
     logger.info(" Calculating parameters for " + str(len(places)) + ' places')
+    start = timer()
+
     pool = ProcessPool(nodes=8)
 
     results = list(pool.map(calc_for_city_fn_producer(functions), places))
@@ -22,6 +26,8 @@ def calculate_scores(places, functions):
             lambda r: _translate_rel_ids_to_names(r.name) + ' (' + r.name + ')' if r.name.isnumeric() else r.name,
             axis=1)
     )
+
+    logger.info("calculated all in: " + str(timer() - start))
     return result_df
 
 
@@ -38,7 +44,7 @@ def nan_on_error(func, place):
     try:
         return func()
     except Exception as e:
-        message = str(e) + '. Occurred for ' + place + '. Returning None'
+        message = type(e).__name__ + ": " + str(e) + '. Occurred for ' + place + '. Returning None'
         logger.error(message)
         # traceback.print_exc()
         return None

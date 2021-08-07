@@ -22,9 +22,13 @@ from osmApi import get_ways_in_relation, get_city_center, get_city_center_coordi
 from util.graphUtils import great_circle_dist, path_len_digraph, shortest_path
 from util.spatial_util import distance_to_nearest, within, convert_crs, distances_to_multiple_nearest, simplify_bearing, \
     circle_radius
-ox.config(log_console=False, use_cache=True, timeout=300, overpass_endpoint='http://osm-api/api', overpass_rate_limit=False, max_query_area_size = 50 * 1000 * 50 * 100)
+ox.config(log_console=False, timeout=300,
+          use_cache=True,
+          overpass_endpoint='http://localhost:12346/api',
+          overpass_rate_limit=False, max_query_area_size = 50 * 1000 * 50 * 100)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 900)
+
 
 
 @memoize
@@ -112,12 +116,8 @@ def streets_per_node_avg_1km(place):
 def one_way_percentage(place):
     highways = geometries_from_place_or_rel_id(place, {
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
-    try:
-        oneway_count = len(highways.loc[highways['oneway'] == 'yes']) / len(highways)
-        return oneway_count
-    except KeyError as k:
-        print(k)
-        print("Occured for " + str(place))
+    oneway_count = 0 if 'oneway' not in highways.columns else len(highways.loc[highways['oneway'] == 'yes']) / len(highways)
+    return oneway_count
 
 
 @timed
@@ -966,4 +966,3 @@ all_functions = [
     streets_in_radius_of_100_m,
     share_of_separated_streets
 ]
-
