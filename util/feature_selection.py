@@ -2,7 +2,7 @@ import itertools
 from operator import itemgetter
 import pandas as pd
 
-from similarity import euclidean_similarity, simple_euclidean
+from similarity import euclidean_similarity, euclidean_distance
 
 test_df = pd.DataFrame(
     [
@@ -41,11 +41,11 @@ def cluster_variance(df, group):
     for first_city in group:
         for second_city in group:
             if first_city != second_city:
-                distances += simple_euclidean(df.loc[first_city], df.loc[second_city])
+                distances += euclidean_distance(df.loc[first_city], df.loc[second_city])
     external_cities = df.drop(group, axis=0).index
     for first_city in group:
         for external_city in external_cities:
-            external_distances += simple_euclidean(df.loc[first_city], df.loc[external_city])
+            external_distances += euclidean_distance(df.loc[first_city], df.loc[external_city])
 
     return distances - external_distances
 

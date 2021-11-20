@@ -1,4 +1,5 @@
 import pandas as pd
+from pandas import DataFrame
 from scipy import stats
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -22,7 +23,9 @@ def normalize(x, x_max):
 
 def remove_outliers(df):
     df_to_remove_outliers = df.loc[:, (df != 0).any(axis=0)]
-    return df[(np.abs(stats.zscore(df_to_remove_outliers)) < 3).all(axis=1)]
+    with_removed = df[(np.abs(stats.zscore(df_to_remove_outliers)) < 3).all(axis=1)]
+    print(np.abs(stats.zscore(df_to_remove_outliers)))
+    return with_removed
 
 
 def standarize(df):
@@ -43,3 +46,4 @@ def preprocess(df, should_remove_outliers=True):
         return df
     else:
         return standarize(df_outlier_removed)
+

@@ -1,16 +1,16 @@
 from OSMPythonTools.nominatim import Nominatim
-from OSMPythonTools.overpass import overpassQueryBuilder, Overpass
+from OSMPythonTools.overpass import overpassQueryBuilder
 from shapely.geometry import shape
 from unidecode import unidecode
 
-from osmApi import get_city_center
+from osmApi import get_city_center, get_overpass_api
 
 
 def find_central_district(place):
     nominatim = Nominatim()
     areaId = nominatim.query(place).areaId()
 
-    overpass = Overpass()
+    overpass = get_overpass_api()
     query = overpassQueryBuilder(area=areaId, elementType='relation', selector='"admin_level"="9"', out='geom')
     result = overpass.query(query)
     city_center = shape(get_city_center(place).geometry())

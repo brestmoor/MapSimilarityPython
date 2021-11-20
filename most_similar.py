@@ -21,6 +21,8 @@ def find_most_similar_in_groups(groups, criteria_string):
 
 
 def find_most_similar_in_df(groups, scores, method='euclidean', should_remove_outliers=False):
+    print('got groups:')
+    print(groups)
     scores = remove_outliers(scores) if should_remove_outliers else scores
     similarityDf = calculate_similarity(scores, method)
     max_similarity = 0
@@ -38,6 +40,6 @@ def _find_group(city, groups):
     for group in groups:
         if city in group:
             return groups.index(group)
-    raise Exception("City not found in any group")
+    raise Exception("City not found in any group: " + city)
 
 

@@ -1,6 +1,6 @@
 {
   "cities": [
-    "Lecco, Italy",
+    "Lecco, 23900, Italy",
     "Valmadrera, Italy",
     "Nembro, Italy",
     "Albino, Italy",
@@ -10,28 +10,43 @@
     "Trento, Italy",
     "Borgo Valsugana, Italy",
     "Feltre, Italy",
+
+    "Belluno, 32100, Italy",
+    "Brixen, Italy",
+    "Bruneck, Italy",
+    "Meran, Italy",
+    "Sterzing, Italy",
+    "Gemona del Friuli, Italy",
+    "Tolmezzo, Italy",
+    "Darfo Boario Terme, Italy",
+    "Mandello del Lario, Italy",
+    "Morbegno, Italy",
+    "Sondrio, 23100, Italy",
+    "Gorizia, Italy",
+    "Verbania, Italy",
+    "Erba, Italy",
+    "Malnate, Italy",
+    "Olgiate Comasco, Italy",
+    "Arona, Italy",
+    "Borgomanero, Italy",
+    "Domodossola, Italy",
+    "Ivrea, Italy",
+
     "Maniago, Italy",
     "San Daniele del Friuli, Italy",
-    "Udine, Italy",
     "Pordenone, Italy",
     "Oderzo, Italy",
-    "Treviso, Italy",
-    "Brescia, Italy",
-    "Rezzato, Italy",
-    "Cremona, Italy",
-    "Mantova, Italy",
-    "Asti, Italy",
-    "Alessandria, Italy",
-    "Pavia, Italy",
-    "Lodi, Italy",
-    "Biella, Italy",
-    "Vercelli, Italy",
-    "Novara, Italy",
-    "Varese, Italy",
-    "Como, Italy",
+    "Pavia, 27100, Italy",
+    "Biella, 13900, Italy",
+    "Vercelli, 13100, Italy",
+    "Novara, 28100, Italy",
+    "Varese, 21100 Italy",
+    "Como, 22100, Italy",
     "Mondovi, Italy",
     "Fossano, Italy",
-    "Piacenza, Italy",
+    "Asti, 14100, Italy",
+    "Rezzato, Italy",
+
 
     "Rosolini, Sicily, Italy",
     "Ispica, Sicily, Italy",
@@ -51,7 +66,6 @@
     "Canicatti, Sicily, Italy",
     "Riesi, Sicily, Italy",
     "Paterno, Sicily, Italy",
-    "Adrano, Sicily, Italy",
     "Biancavilla, Sicily, Italy",
     "Catania, Sicily, Italy",
     "Acireale, Sicily, Italy",
@@ -62,10 +76,19 @@
     "Sciacca, Sicily, Italy",
     "Castelvetrano, Sicily, Italy",
     "Messina, Sicily, Italy",
-    "Siracusa, Sicily, Italy"
+    "Siracusa, Sicily, Italy",
+
+    "Grammichele, Italy",
+    "Lentini, Italy",
+    "Marsala, Italy",
+    "Trapani, 91100, Italy",
+    "Alcamo, Italy",
+    "Partinico, Italy",
+    "Castellammare del Golfo",
+    "Bagheria, Italy"
 
   ],
   "criteria": [
-    "tourism"
+    "all"
   ]
 }

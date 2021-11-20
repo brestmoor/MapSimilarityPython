@@ -10,27 +10,10 @@ from pca import calculate_pca
 
 # plt.rcParams["figure.dpi"] = 4000
 # ox.config(log_console=False, use_cache=True)
-
-
-def display_similarity_on_map(pca_for_countries, crs_reference):
-    ax = None
-    for key in pca_for_countries:
-        crs_reference_gdf = ox.project_gdf(ox.geocode_to_gdf(crs_reference))
-        pca = pca_for_countries[key]
-        country = ox.project_gdf(ox.geocode_to_gdf(key))
-        cities = ox.project_gdf(ox.geocode_to_gdf(list(pca.index)), country.crs)
-
-        cities = _set_index(cities, pca.index)
-        cities['PC1'] = pca
-        _clean_up(cities)
-
-        ax = country.boundary.plot(ax=ax, edgecolor="black", linewidth=0.5)
-        ax = cities.plot(ax=ax, column='PC1', cmap='winter')
-        ax = cities.plot(ax=ax, column='PC1', cmap='winter')
-
-    _ = ax.axis("off")
-
-
+ox.config(log_console=False, timeout=300,
+          use_cache=True,
+          overpass_endpoint='http://localhost:12346/api',
+          overpass_rate_limit=False, max_query_area_size = 2 * 1000 * 50 * 100)
 
 def _set_index(df, index):
     df['index_c'] = index
@@ -91,3 +74,40 @@ def display_similarity_on_map2(cities_pca, countries_names, crs_reference, linew
 # cities.plot(ax=ax, column='PC1', cmap='winter')
 # _ = ax.axis("off")
 # plt.show()
+
+
+gdf = geocode_to_gdf_by_place_or_rel_id(["Meaux, France",
+    "Coulommiers, France",
+    "Compiegne, France",
+    "Chauny, France",
+    "Soissons, France",
+    "Sezanne, France",
+    "Troyes, France",
+    "Reims, France",
+    "Montargis, France",
+    "Evreux, France",
+    "Beauvais, France",
+    "Amiens, France",
+    "L'aigle, France",
+    "Lisieux, France",
+    "Laval, France",
+    "Lamballe, France",
+    "Saint-Malo, France",
+    "Dinan, France",
+    "Saint-Brieuc, France",
+    "Guingamp, France",
+    "Lannion, France",
+    "Morlaix, France",
+    "Landivisiau, France",
+    "Landerneau, France",
+    "Chateau-Gontier, France",
+    "Angers, France",
+    "Nantes, France",
+    "Tours, France",
+    "La Roche-Sur-Yon, France",
+    "Challans, France",
+    "Cholet, France",
+    "Thouars, France",
+    "Niort, France"])
+
+print()

@@ -13,18 +13,24 @@
     "Pskov, Russia",
     "Veliky Novgorod, Russia",
     "Volgograd, Russia",
-    "Saratov, Russia",
-    "Engels, Russia",
-    "Balakovo, Russia",
     "Penza, Russia",
-    "Cheboksary, Russia",
-    "Novocheboksarsk, Russia",
-    "Yoshkar-Ola, Russia",
     "Vladimir, Russia",
-    "Ulyanovsk, Russia",
-    "Dimitrovgrad, Russia",
-    "Ufa, Russia",
-    "Orenburg, Russia",
+
+    "Roslavl, Russia",
+    "Smolensk, Russia",
+    "Demidow, Russia",
+    "Yartsevo, Russia",
+    "Kletnya, Russia",
+    "Kursk, Russia",
+    "Lipetsk, Russia",
+    "Yelets, Russia",
+    "Kaluga, Kaluga Oblast, Russia",
+    "Chekhov, Russia",
+    "Yegoryevsk, Russia",
+    "Podolsk, Russia",
+    "Domodedovo, Russia",
+    "Naro-Fominsk, Russia",
+    "Istra, Russia",
 
     "Meaux, France",
     "Coulommiers, France",
@@ -61,6 +67,6 @@
     "Niort, France"
   ],
   "criteria": [
-    "tourism"
+    "all"
   ]
 }

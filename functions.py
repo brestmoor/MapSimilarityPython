@@ -25,7 +25,7 @@ from util.spatial_util import distance_to_nearest, within, convert_crs, distance
 ox.config(log_console=False, timeout=300,
           use_cache=True,
           overpass_endpoint='http://localhost:12346/api',
-          overpass_rate_limit=False, max_query_area_size = 50 * 1000 * 50 * 100)
+          overpass_rate_limit=False, max_query_area_size = 2 * 1000 * 50 * 100)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 900)
 
@@ -44,23 +44,24 @@ def basic_stats(place):
     nodes_proj = ox.graph_to_gdfs(G_proj, edges=False)
     graph_area_m = nodes_proj.unary_union.convex_hull.area
 
-    return ox.basic_stats(G_proj, area=graph_area_m, clean_intersects=True, circuity_dist='euclidean')
+    return ox.basic_stats(G_proj, area=graph_area_m, clean_int_tol=15)
 
 @memoize
 def basic_stats_in_1km_radius(place):
-    cf = '["highway"~"motorway|trunk|primary|secondary|tertiary|residential"]'
+    address = None
+    if place.isnumeric():
+        gdf = ox.geocode_to_gdf('R' + place, by_osmid=True)
+        address = gdf.name
+    else:
+        address = place
 
-    @timed
-    def graph_from_place_basic_stats(inner_place):
-        return graph_from_place_or_rel_id(inner_place, network_type='drive', custom_filter=cf)
-
-    G = graph_from_place_basic_stats(place)
+    city_center, crs = project_geometry(Point(get_city_center_coordinates(address)))
+    city_center_area = city_center.buffer(1000)
+    city_center_area_proj, crs = project_geometry(city_center_area, crs, to_latlong=True)
+    G = ox.graph_from_polygon(city_center_area_proj)
     G_proj = ox.project_graph(G)
 
-    projected_point, crs = project_geometry(Point(get_city_center_coordinates(place)))
-    circle = projected_point.buffer(1000)
-
-    return ox.basic_stats(G_proj, area=circle, clean_intersects=True, circuity_dist='euclidean')
+    return ox.basic_stats(G_proj, area=ox.graph_to_gdfs(G_proj, edges=False).unary_union.convex_hull.area, clean_intersects=True, circuity_dist='euclidean')
 
 
 @timed
@@ -89,27 +90,27 @@ def streets_per_node_avg(place):
 
 @timed
 def average_street_length_1km(place):
-    return basic_stats(place)['street_length_avg']
+    return basic_stats_in_1km_radius(place)['street_length_avg']
 
 
 @timed
 def intersection_density_km_1km(place):
-    return basic_stats(place)['intersection_density_km']
+    return basic_stats_in_1km_radius(place)['intersection_density_km']
 
 
 @timed
 def street_density_km_1km(place):
-    return basic_stats(place)['street_density_km']
+    return basic_stats_in_1km_radius(place)['street_density_km']
 
 
 @timed
 def circuity_avg_1km(place):
-    return basic_stats(place)['circuity_avg']
+    return basic_stats_in_1km_radius(place)['circuity_avg']
 
 
 @timed
 def streets_per_node_avg_1km(place):
-    return basic_stats(place)['streets_per_node_avg']
+    return basic_stats_in_1km_radius(place)['streets_per_node_avg']
 
 
 @timed
@@ -124,12 +125,8 @@ def one_way_percentage(place):
 def trunk_percentage(place):
     highways = geometries_from_place_or_rel_id(place, {
         'highway': ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'residential']})
-    try:
-        primary_count = len(highways.loc[highways['highway'] == 'trunk']) / len(highways)
-        return primary_count
-    except KeyError as k:
-        print(k)
-        print("Occured for " + str(place))
+    primary_count = len(highways.loc[highways['highway'] == 'trunk']) / len(highways)
+    return primary_count
 
 @timed
 def primary_percentage(place):
@@ -241,7 +238,7 @@ def average_dist_to_bus_stop(place):
     start = timer()
     bus_df = geometries_from_place_or_rel_id(place, {'highway': 'bus_stop'})
     if bus_df.empty:
-        return 1000000
+        return 10000
 
     got_stops = timer()
 
@@ -268,7 +265,7 @@ def average_dist_to_any_public_transport_stop(place):
     start = timer()
     bus_df = geometries_from_place_or_rel_id(place, {'highway': 'bus_stop', 'public_transport': 'stop_position'})
     if bus_df.empty:
-        return 1000000
+        return 10000
 
 
     buildingsDf = geometries_from_place_or_rel_id(place, {
@@ -291,7 +288,7 @@ def mode_dist_to_any_public_transport_stop(place):
     start = timer()
     bus_df = geometries_from_place_or_rel_id(place, {'highway': 'bus_stop', 'public_transport': 'stop_position'})
     if bus_df.empty:
-        return 1000000
+        return 10000
 
 
     buildingsDf = geometries_from_place_or_rel_id(place, {
@@ -352,16 +349,14 @@ def no_of_streets_crossing_boundary(place):
 @timed
 def no_of_railways_crossing_boundary(place):
     krakow_boundary = ox.project_gdf(geocode_to_gdf_by_place_or_rel_id(place))
-    railwaysDf = ox.project_gdf(geometries_from_place_or_rel_id(place, {'railway': True}, buffer_dist=400))
+    railwaysDf = geometries_from_place_or_rel_id(place, {'railway': True}, buffer_dist=400)
 
-    return sum(railwaysDf.crosses(krakow_boundary.iloc[0].geometry))
+    if railwaysDf.empty:
+        return 0
 
-@timed
-def no_of_railways_crossing_boundary(place):
-    krakow_boundary = ox.project_gdf(geocode_to_gdf_by_place_or_rel_id(place))
-    railwaysDf = ox.project_gdf(geometries_from_place_or_rel_id(place, {'railway': True}, buffer_dist=400))
+    railwaysDf_projected = ox.project_gdf(railwaysDf)
 
-    return sum(railwaysDf.crosses(krakow_boundary.iloc[0].geometry))
+    return sum(railwaysDf_projected.crosses(krakow_boundary.iloc[0].geometry))
 
 @timed
 def no_of_streets_crossing_boundary_proportional(place):
@@ -432,6 +427,10 @@ def bus_routes_to_highways(place):
     start = timer()
     print("Starting bus_routes_to_higways for: " + place)
     bus_routes_ways = get_ways_in_relation(place, '"route"="bus"')
+
+    if not bus_routes_ways:
+        return 0
+
     got_ways = timer()
     ids_of_bus_ways = [x['ref'] for x in bus_routes_ways]
     poi_highways = geometries_from_place_or_rel_id(place, {
@@ -442,7 +441,7 @@ def bus_routes_to_highways(place):
     proportion = highways_proj[highways_proj.index.isin(ids_of_bus_ways, level='osmid')].length.sum() / highways_proj.length.sum()
     calculated_proportion = timer()
     # print("got bus routes: " + str(got_ways - start) + " got pois: " + str(got_pois - got_ways) +  " calculated proportion" + str(calculated_proportion - got_pois))
-    return proportion  # pokrycje sie zwiekszylo z 28 do 38 %
+    return proportion
 
 
 @timed
@@ -587,7 +586,7 @@ def avg_distance_between_buildings(place):
             lambda row: distance_to_nearest(buildings_polygons, row.geometry), axis=1)
     except ValueError as e:
         print(str(e) + " happened for " + place)
-        return 1000000
+        return 10000
     return buildings_polygons['dist_to_nearest_building'].mean()
 
 
@@ -767,9 +766,15 @@ def amenity_dist_to_nearest(place, amenities):
     start = timer()
     print("Starting amenity_density for: " + place + " " + str(amenities))
 
-    amenities_df = ox.project_gdf(geometries_from_place_or_rel_id(place, amenities))
+    amenities_df = geometries_from_place_or_rel_id(place, amenities)
+
+    if len(amenities_df) <= 1:
+        return 10000
+
+    amenities_df_projected = ox.project_gdf(amenities_df)
+
     got_amenities = timer()
-    distances_to_nearest = amenities_df.apply(lambda row: distances_to_multiple_nearest(amenities_df, row.geometry, 3),
+    distances_to_nearest = amenities_df_projected.apply(lambda row: distances_to_multiple_nearest(amenities_df_projected, row.geometry, 3),
                                          axis=1)
     if distances_to_nearest is None:
         return None
@@ -966,3 +971,4 @@ all_functions = [
     streets_in_radius_of_100_m,
     share_of_separated_streets
 ]
+

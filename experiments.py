@@ -5,6 +5,19 @@ import graphFunctions as graph_functions
 from scores import calculate_scores
 from similarity import calculate_similarity
 
+profiles = [
+    ('Streets', 'streets'),
+    ('Buildings', 'buildings'),
+    ('Public transport', 'public_transport'),
+    ('City facilities', 'city_facilities'),
+    ('City structure', 'city_structure'),
+    ('Railways', 'railways'),
+    ('Points of interest', 'points_of_interest'),
+    ('Historic', 'historic'),
+    ('Tourism', 'tourism'),
+    ('Population', 'population'),
+]
+
 all_criteria = {
     'buildings': [
         df_functions.avg_distance_between_buildings,
@@ -47,6 +60,11 @@ all_criteria = {
         df_functions.streets_in_radius_of_100_m,
         df_functions.share_of_separated_streets,
         df_functions.no_of_streets_crossing_boundary_proportional,
+
+        df_functions.intersection_density_km_1km,
+        df_functions.street_density_km_1km,
+        df_functions.average_street_length_1km,
+
     ],
     'city_structure': [
         df_functions.circuity_avg,
@@ -54,6 +72,9 @@ all_criteria = {
         df_functions.network_orientation,
         df_functions.streets_per_node_avg,
         df_functions.buildings_uniformity,
+
+        df_functions.circuity_avg_1km,
+        df_functions.streets_per_node_avg_1km
     ],
     'railways': [
         df_functions.all_railways_to_highway,
@@ -162,10 +183,17 @@ all_criteria = {
         df_functions.no_of_streets_crossing_boundary,
 
     ],
-
-    'all_functions': df_functions.all_functions + graph_functions.all_functions
 }
 
+def get_criteria(profile):
+    if profile == 'all':
+        profile_names = [profile[1] for profile in profiles]
+        criteria = []
+        for name in profile_names:
+            criteria = criteria + all_criteria[name]
+        return criteria
+    else:
+        return all_criteria[profile]
 
 def get_scores_and_similarity(places, criteria_str):
     scores = get_scores(places, criteria_str)
@@ -175,7 +203,7 @@ def get_scores_and_similarity(places, criteria_str):
 def get_scores(places, criteria_str):
     criteria = []
     for criterion in criteria_str:
-        criteria.extend(all_criteria[criterion])
+        criteria.extend(get_criteria(criterion))
     scores = calculate_scores(places, criteria)
     return scores
 
@@ -222,5 +250,3 @@ all_fns_names = ['avg_distance_between_buildings',
 'entertainment_buildings_share',
 'shops_share',
 'office_share']
-
-# print([t[0] for t in getmembers(fn, isfunction) if t[0] not in all_fns_names])

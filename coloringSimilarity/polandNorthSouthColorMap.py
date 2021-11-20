@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from osmnx.plot import _get_colors_by_value
 
-from coloringSimilarity.draw_boundary import display_similarity_on_map, display_similarity_on_map2
+from coloringSimilarity.draw_boundary import display_similarity_on_map2
 from pca import calculate_pca
 
 plt.rcParams["figure.dpi"] = 500

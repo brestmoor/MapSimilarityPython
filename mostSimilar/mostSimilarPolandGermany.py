@@ -9,3 +9,5 @@ df = pd.read_csv("../out/poland_germany_streets_top80.csv", index_col=0)
 df = df.dropna()
 
 print(find_most_similar_in_df([poland, germany], df, 'pearson', True))
+
+
