@@ -128,4 +128,3 @@ def _number_of_routes_not_longer_than_2_times(G, nodes_pair):
     shortest_paths_count = len(find_paths_not_longer_than(G, nodes_pair, 3, 1.2 * shortest_path_len))
     return shortest_paths_count
 
-# print(timeit(how_many_failures_can_network_handle))

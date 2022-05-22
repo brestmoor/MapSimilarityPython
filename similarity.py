@@ -5,16 +5,7 @@ import numpy as np
 import pandas as pd
 from scipy import spatial
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import silhouette_score as silhouette_score_sk
-from sklearn.metrics import silhouette_samples as silhouette_samples_sk
-from timeit import default_timer as timer
 
-from util.processing import normalize_series
-
-
-# def positive_pearson(x, y):
-#     pearson_result = pearson(x, y)
-#     return pearson_result if pearson_result > 0 else 0
 
 
 def pearson(x, y):
@@ -36,7 +27,6 @@ def euclidean_similarity(x, y):
 def angular_similarity(x, y):
     return 1 - np.arccos(cosine(x, y)) / np.pi
 
-# krak_wroc = pd.DataFrame({'Krakow': [221.947849, 0.375124, 0.152036, 0.128238], 'Wroclaw': [234.532927, 0.011988, 0.283432, 0.166200]})
 
 def scale_min_max(df):
     scaler = MinMaxScaler()
@@ -136,12 +126,6 @@ second_df = pd.DataFrame(
          'b': [5, 5, 5, 4],
          'c': [6, 6, 6, 5]}
     )
-
-# print(silhouette_score(first_df[['a', 'b']], second_df[['a', 'b']]))
-# print(silhouette_score(first_df[['a', 'b', 'c']], second_df[['a', 'b', 'c']]))
-# print(find_columns_with_best_silhouette_score(first_df, second_df, 2))
-# print(find_individual_columns_with_best_silhouette_score(first_df, second_df))
-# score = silhouette_score_sk(pd.concat([first_df, second_df]), [1] * len(first_df) + [2] * len(second_df))
 
 
 def calculate_similarity_to_ndarray(scores_df):

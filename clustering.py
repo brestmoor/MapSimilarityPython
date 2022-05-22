@@ -8,4 +8,3 @@ def k_means(df):
     return pd.Series(kmeans.labels_, index=df.index)
 
 
-# k_means(pd.read_csv("old_and_industrial_buildings.csv", index_col=0))

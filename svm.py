@@ -56,11 +56,3 @@ def get_decision_boundary(clf, xlim1, xlim2, ylim1, ylim2):
     y = [y for y in yy if ylim1 <= y <= ylim2]
     return x, y
 
-
-fit_and_print_precision(pd.DataFrame({'PC1': [1,6,1,6,1,2,3,4,3, 1,6,1,6,1,2,3,4,3, 1,6,1,6,1,2,3,4,3, 1,6,1,6,1,2,3,4,3],
-                                      'PC2': [1, 6, 1, 6, 1, 1, 5, 5, 5, 1,6,1,6,1,2,3,4,3, 1, 6, 1, 6, 1, 1, 5, 5, 5, 1,6,1,6,1,2,3,4,3],
-                                      'cluster': ['a', 'a', 'a', 'a', 'a', 'a', 'b', 'b', 'b', 'a', 'a', 'a', 'a', 'a', 'a', 'b', 'b', 'b', 'a', 'a', 'a', 'a', 'a', 'a', 'b', 'b', 'b', 'a', 'a', 'a', 'a', 'a', 'a', 'b', 'b', 'b']}))
-
-# clf = fit_clf(sample_data, [0, 0, 1, 1, 1])
-# get_decision_boundary(clf, 0, 16)
-# plt.show()

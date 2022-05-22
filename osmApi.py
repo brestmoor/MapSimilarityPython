@@ -34,15 +34,6 @@ def _get_area_id(place):
             return json[0]['osm_id'] + 2400000000
         return None
 
-# @timed
-# def get_centroid(addr, selector, element_type='way'):
-#     areaId = _get_area_id(addr)
-#     overpass = get_overpass_api()
-#     query = overpassQueryBuilder(area=areaId, selector=selector, out='center', elementType=element_type)
-#     overpass.deleteQueryFromCache(query)
-#     result = overpass.query(query, timeout=120)
-#     return result.countElements()
-
 
 def overpass_query(addr, selector, element_type):
     areaId = _get_area_id(addr)
