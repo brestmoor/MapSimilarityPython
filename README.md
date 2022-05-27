@@ -1,6 +1,6 @@
 # MapSimilarityPython
 An app for calculating parameters for cities such as "average street length" or "average distance between buildings", and then allowing to calculate similarity 
-for cities and whole regions. For assessing similarity Euclidean distance is used. For presentation on charts, data dimentionality is reduced using the PCA algorithm.
+for cities and whole regions. For assessing similarity Euclidean distance, and silhouette score are used. Multidimensional parameters calculated for the cities are reduced to two dimensions in order to plot them, or to one dimension to colour the contours of the cities on the map, with similar colors denoting similar cities. Dimensions are reduced using PCA algorithm.
 
 ![example_calculations](https://user-images.githubusercontent.com/17832444/169710293-2e5ab6df-a1ad-439d-af13-66f89c5eed00.png)
 
