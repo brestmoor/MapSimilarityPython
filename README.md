@@ -14,5 +14,6 @@ for cities and whole regions. For assessing similarity Euclidean distance, and s
 - cities_similarity_app.ipynb - Jupyter file for running comparison experiments
 - docker-compose.yml - docker compose file for setting up local OpenStreetMap database, Overpass API and the app.
 
+On the two dimensional plot each point is a different city. Points with the same colour are from the same region.
 ![england_france_plot](https://user-images.githubusercontent.com/17832444/169710296-de40c519-2ad2-4fbc-8531-a72627c6b971.png)
 ![england_france_map](https://user-images.githubusercontent.com/17832444/169710300-fcab91c1-ed89-4557-abd0-48f4264634df.png)
